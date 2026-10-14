@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshop Architecture & Widget Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f12;
+      --card-bg: #161920;
+      --card-border: #262c38;
+      --card-header: #1b1f28;
+      --hover-bg: #212632;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #656d76;
+      --border-subtle: #30363d;
+      --accent: #d1d5db;
+      --accent-strong: #ffffff;
+      --zone-border: #1f242e;
+      --zone-bg: rgba(22, 25, 32, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+    }
+
+    /* Solid Dark Pannable Viewport (No Grid, No Gradients) */
+    #viewport {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: var(--bg);
+      overflow: hidden;
+    }
+
+    #viewport.dragging {
+      cursor: grabbing;
+    }
+
+    #world {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    /* Zone Containers matching Workshop Guide */
+    .zone-box {
+      position: absolute;
+      background: var(--zone-bg);
+      border: 1px dashed var(--zone-border);
+      border-radius: 16px;
+      padding: 20px;
+      pointer-events: none;
+    }
+
+    .zone-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 15px;
+    }
+
+    /* SVG Connection Lines */
+    #svg-connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3200px;
+      height: 2200px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .connection-line {
+      fill: none;
+      stroke: #3b4252;
+      stroke-width: 2;
+      stroke-dasharray: 5 5;
+      opacity: 0.8;
+    }
+
+    .connection-line.controller-line {
+      stroke: #64748b;
+      stroke-width: 2.2;
+      stroke-dasharray: 4 4;
+    }
+
+    /* Class Cards */
+    .nodes-container {
+      position: relative;
+      z-index: 2;
+      width: 3200px;
+      height: 2200px;
+    }
+
+    .node {
+      position: absolute;
+      width: 320px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      overflow: hidden;
+    }
+
+    .node:hover {
+      border-color: #4b5563;
+    }
+
+    .node.active-node {
+      border-color: #9ca3af;
+    }
+
+    /* Node Header */
+    .node-header {
+      padding: 14px 16px;
+      background: var(--card-header);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .node-header:hover {
+      background: var(--hover-bg);
+    }
+
+    .node-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .node-badge {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #232731;
+      color: #9ca3af;
+      border: 1px solid #333a46;
+    }
+
+    .node-desc {
+      padding: 10px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--card-border);
+      background: #13161c;
+      line-height: 1.4;
+    }
+
+    /* Fields List */
+    .node-fields {
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .field-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      transition: background 0.12s ease;
+    }
+
+    .field-item:hover {
+      background: var(--hover-bg);
+    }
+
+    .field-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .field-bullet {
+      color: #6b7280;
+      font-size: 10px;
+    }
+
+    .field-name {
+      color: #e5e7eb;
+    }
+
+    .field-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .field-type {
+      font-size: 10.5px;
+      color: #94a3b8;
+    }
+
+    /* Controller Nodes (Special Styling for Phase 3) */
+    .controller-node {
+      width: 290px;
+      border: 1px dashed #475569;
+      background: #141820;
+    }
+
+    .controller-node .node-header {
+      background: #1a202c;
+    }
+
+    /* Simple Floating Hover Tooltip */
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.12s ease;
+      background: #1b1f28;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 12px 14px;
+      max-width: 310px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+    }
+
+    #tooltip.visible {
+      opacity: 1;
+    }
+
+    .tt-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .tt-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+
+    .tt-desc {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .tt-meta {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #9ca3af;
+      padding-top: 6px;
+      border-top: 1px solid #2d3340;
+    }
+
+    /* Top Phase Navigation Bar */
+    .nav-bar {
+      position: fixed;
+      top: 16px;
+      left: 20px;
+      right: 20px;
+      height: 52px;
+      background: rgba(22, 25, 32, 0.95);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .phase-buttons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .phase-btn {
+      background: #1b1f28;
+      border: 1px solid #2d3340;
+      color: #9ca3af;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .phase-btn:hover {
+      background: #252b38;
+      color: #fff;
+      border-color: #4b5563;
+    }
+
+    .phase-btn.active {
+      background: #2d3444;
+      color: #fff;
+      border-color: #6b7280;
+    }
+
+    /* Zoom Controls Dock */
+    .controls-dock {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(22, 25, 32, 0.95);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 100;
+    }
+
+    .ctrl-btn {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .ctrl-btn:hover {
+      background: #252b38;
+      color: #fff;
+    }
+
+    .zoom-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #8b949e;
+      padding: 0 6px;
+    }
+
+    /* Clean Uncluttered Example Constructor Sidebar */
+    #sidebar {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      bottom: 20px;
+      width: 360px;
+      background: #161920;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      z-index: 90;
+      transform: translateX(410px);
+      transition: transform 0.25s ease;
+      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sidebar-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 20px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: #8b949e;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      color: #fff;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #8b949e;
+      margin-bottom: 8px;
+    }
+
+    .code-container {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .code-snippet {
+      background: #0d0f12;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #e5e7eb;
+      line-height: 1.5;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .copy-btn {
+      margin-top: 10px;
+      background: #212632;
+      border: 1px solid #374151;
+      color: #e5e7eb;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    .copy-btn:hover {
+      background: #2c3342;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation with Workshop Phase Jumps -->
+  <header class="nav-bar">
+    <div class="nav-left">
+      <span class="nav-title">Workshop Architecture</span>
+    </div>
+
+    <div class="phase-buttons">
+      <button class="phase-btn" onclick="goToPhase('all')">View All</button>
+      <button class="phase-btn" onclick="goToPhase('phase1')">Phase 1: Skeleton</button>
+      <button class="phase-btn" onclick="goToPhase('phase2')">Phase 2: Theme</button>
+      <button class="phase-btn" onclick="goToPhase('phase3')">Phase 3: Controllers</button>
+      <button class="phase-btn" onclick="goToPhase('phase4')">Phase 4 & 5: Gen AI</button>
+    </div>
+  </header>
+
+  <!-- Pannable World -->
+  <main id="viewport">
+    <div id="world">
+      
+      <!-- Phase 1 Zone Outline -->
+      <div class="zone-box" style="left: 40px; top: 80px; width: 1460px; height: 750px;">
+        <div class="zone-label">Phase 1: Skeleton of the App (Core Widgets & Shell)</div>
+      </div>
+
+      <!-- Phase 2 Zone Outline -->
+      <div class="zone-box" style="left: 1560px; top: 80px; width: 380px; height: 420px;">
+        <div class="zone-label">Phase 2: Set the Theme</div>
+      </div>
+
+      <!-- Phase 3 Zone Outline -->
+      <div class="zone-box" style="left: 40px; top: 880px; width: 1460px; height: 380px;">
+        <div class="zone-label">Phase 3: Text Controllers (The Whiteboards)</div>
+      </div>
+
+      <!-- Phase 4 & 5 Zone Outline -->
+      <div class="zone-box" style="left: 1560px; top: 540px; width: 440px; height: 380px;">
+        <div class="zone-label">Phase 4 & 5: Gen AI Prerequisites & Live AI</div>
+      </div>
+
+      <!-- SVG Connection Lines -->
+      <svg id="svg-connections">
+        <!-- Rendered via JavaScript -->
+      </svg>
+
+      <!-- Nodes -->
+      <div class="nodes-container" id="nodes-container">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Simple Hover Tooltip -->
+  <div id="tooltip">
+    <div class="tt-title" id="tt-title">field</div>
+    <div class="tt-type" id="tt-type">Type</div>
+    <div class="tt-desc" id="tt-desc">Description goes here.</div>
+    <div class="tt-meta" id="tt-meta">Default: null</div>
+  </div>
+
+  <!-- Viewport Zoom Controls -->
+  <div class="controls-dock">
+    <button class="ctrl-btn" id="btn-zoom-in" title="Zoom In">+</button>
+    <span class="zoom-text" id="zoom-text">85%</span>
+    <button class="ctrl-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+    <button class="ctrl-btn" id="btn-reset" title="Fit All">⛶</button>
+  </div>
+
+  <!-- Clean Example Constructor Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div class="sidebar-title" id="sb-title">AppActionButton</div>
+      </div>
+      <button class="close-btn" id="sb-close">&times;</button>
+    </div>
+    <div class="sidebar-desc" id="sb-desc">Short description of this class.</div>
+
+    <div class="section-label">Example Constructor</div>
+    <div class="code-container">
+      <pre class="code-snippet" id="sb-code"></pre>
+      <button class="copy-btn" id="sb-copy">Copy to Clipboard</button>
+    </div>
+  </aside>
+
+  <script>
+    // Workshop Architecture Data organized by Phase
+    const NODES = [
+      // PHASE 1: SKELETON (Core Shell & 4 Widgets)
+      {
+        id: 'WorkshopApp',
+        name: 'WorkshopApp',
+        badge: 'Core Shell',
+        phase: 'phase1',
+        x: 610,
+        y: 130,
+        desc: 'The prebuilt app shell. It handles scrolling, margins, and holds the widgets in Section A.',
+        example: `WorkshopApp(\n  title: 'character.AI',\n  palette: palette,\n  config: config,\n  children: [\n    // Put your 4 core widgets here\n  ],\n)`,
+        fields: [
+          { name: 'children', type: 'List<Widget>', default: 'const []', desc: 'The list of widgets shown on screen in vertical order.' },
+          { name: 'palette', type: 'WorkshopPalette', default: 'const WorkshopPalette()', desc: 'The color theme applied to the app.' },
+          { name: 'config', type: 'AiConfig', default: 'const AiConfig()', desc: 'The AI connection settings (API key, model, mock mode).' },
+          { name: 'title', type: 'String', default: "'character.AI'", desc: 'The title string of the app.' },
+          { name: 'controller', type: 'TextEditingController?', default: 'null', desc: 'Optional shared root text controller.' }
+        ]
+      },
+      {
+        id: 'AppLogo',
+        name: 'AppLogo',
+        badge: 'Widget 1',
+        phase: 'phase1',
+        x: 70,
+        y: 440,
+        desc: 'The header block displaying the app title and brand icon.',
+        example: `const AppLogo(\n  title: 'character.AI',\n  subtitle: 'Roleplay with any persona',\n  icon: Icons.psychology_rounded,\n)`,
+        fields: [
+          { name: 'title', type: 'String', default: "'character.AI'", desc: "The main title text. The dot '.' splits color between primary and secondary." },
+          { name: 'subtitle', type: 'String', default: "''", desc: 'Short tagline text shown underneath the title.' },
+          { name: 'icon', type: 'IconData?', default: 'null', desc: 'Circled icon displayed above the title.' },
+          { name: 'badgeText', type: 'String', default: "''", desc: "Small badge tag next to the title (e.g. 'PRO' or 'V2')." },
+          { name: 'alignment', type: 'CrossAxisAlignment', default: 'center', desc: 'Horizontal alignment: center, start, or end.' }
+        ]
+      },
+      {
+        id: 'AppCharacterSelector',
+        name: 'AppCharacterSelector',
+        badge: 'Widget 2',
+        phase: 'phase1',
+        x: 430,
+        y: 440,
+        desc: 'Text input where users type the character they want to talk to.',
+        example: `AppCharacterSelector(\n  controller: characterController,\n  hint: 'Who do you want to talk to? (e.g. Socrates, Yoda)',\n)`,
+        fields: [
+          { name: 'controller', type: 'TextEditingController?', default: 'null', desc: 'Whiteboard 1: Stores who the user typed to talk to.' },
+          { name: 'hint', type: 'String', default: "'Type any character...'", desc: 'Placeholder text shown when the box is empty.' },
+          { name: 'label', type: 'String', default: "'CHARACTER / PERSONA'", desc: 'Label text shown directly above the input box.' },
+          { name: 'characters', type: 'List<WorkshopCharacter>', default: 'const []', desc: 'Optional preset chips for 1-tap character selection.' }
+        ]
+      },
+      {
+        id: 'AppConversation',
+        name: 'AppConversation',
+        badge: 'Widget 3',
+        phase: 'phase1',
+        x: 790,
+        y: 440,
+        desc: 'Text input where users type their message, and where AI responses appear.',
+        example: `AppConversation(\n  controller: messageController,\n  hint: 'Ask anything...',\n)`,
+        fields: [
+          { name: 'controller', type: 'TextEditingController?', default: 'null', desc: 'Whiteboard 2: Stores the question or prompt the user typed.' },
+          { name: 'hint', type: 'String', default: "'Ask anything...'", desc: 'Placeholder text shown inside the message field.' },
+          { name: 'label', type: 'String', default: "'YOUR MESSAGE'", desc: 'Label text shown directly above the message box.' },
+          { name: 'showClearButton', type: 'bool', default: 'true', desc: "Shows an 'X' button inside the field to clear text." },
+          { name: 'bubbleRadius', type: 'double', default: '16.0', desc: 'Corner rounding of message and reply cards.' }
+        ]
+      },
+      {
+        id: 'AppActionButton',
+        name: 'AppActionButton',
+        badge: 'Widget 4',
+        phase: 'phase1',
+        x: 1150,
+        y: 440,
+        desc: 'The button that triggers the AI response by reading both controllers.',
+        example: `AppActionButton(\n  characterController: characterController,\n  messageController: messageController,\n)`,
+        fields: [
+          { name: 'characterController', type: 'TextEditingController?', default: 'null', desc: 'Reads who to roleplay as when tapped.' },
+          { name: 'messageController', type: 'TextEditingController?', default: 'null', desc: 'Reads what question to ask when tapped.' },
+          { name: 'label', type: 'String', default: "'Send message'", desc: 'Button text in idle state.' },
+          { name: 'loadingLabel', type: 'String', default: "'Thinking...'", desc: 'Button text while waiting for AI response.' },
+          { name: 'icon', type: 'IconData', default: 'Icons.arrow_upward_rounded', desc: 'Icon shown next to the button text.' },
+          { name: 'fullWidth', type: 'bool', default: 'false', desc: 'When true, expands button to 100% container width.' }
+        ]
+      },
+
+      // PHASE 2: THEME
+      {
+        id: 'WorkshopPalette',
+        name: 'WorkshopPalette',
+        badge: 'Theme Config',
+        phase: 'phase2',
+        x: 1590,
+        y: 130,
+        desc: 'Configures colors and brightness across all widgets in the app.',
+        example: `const palette = WorkshopPalette(\n  primary: Color(0xFF171717),\n  secondary: Color(0xFF525252),\n  background: Color(0xFFFFFFFF),\n  surface: Color(0xFFF5F5F5),\n  brightness: Brightness.light,\n);`,
+        fields: [
+          { name: 'primary', type: 'Color', default: '0xFF8ABFFF', desc: 'Main accent color used for buttons and active chips.' },
+          { name: 'background', type: 'Color', default: '0xFF101215', desc: 'The background color of the whole page.' },
+          { name: 'surface', type: 'Color', default: '0xFF282C34', desc: 'The background color for cards and input fields.' },
+          { name: 'text', type: 'Color', default: '0xFFF5F7FA', desc: 'Primary typography color.' },
+          { name: 'brightness', type: 'Brightness', default: 'Brightness.dark', desc: 'Brightness mode: Brightness.dark or Brightness.light.' }
+        ]
+      },
+
+      // PHASE 3: TEXT CONTROLLERS (THE WHITEBOARDS)
+      {
+        id: 'characterController',
+        name: 'characterController',
+        badge: 'Whiteboard 1',
+        phase: 'phase3',
+        isController: true,
+        x: 430,
+        y: 930,
+        desc: 'Whiteboard 1: Holds WHO you are talking to. AppCharacterSelector writes into it, AppActionButton reads it.',
+        example: `// 1. Declare in State:\nfinal characterController = TextEditingController(text: 'Socrates');\n\n// 2. Dispose to prevent memory leaks:\n@override\nvoid dispose() {\n  characterController.dispose();\n  super.dispose();\n}`,
+        fields: [
+          { name: 'text', type: 'String', default: "'Socrates'", desc: 'The current character name stored in memory.' },
+          { name: 'clear()', type: 'Function', default: 'void', desc: 'Clears the text in the character input box.' },
+          { name: 'dispose()', type: 'Function', default: 'void', desc: 'Frees memory when the screen is destroyed.' }
+        ]
+      },
+      {
+        id: 'messageController',
+        name: 'messageController',
+        badge: 'Whiteboard 2',
+        phase: 'phase3',
+        isController: true,
+        x: 790,
+        y: 930,
+        desc: 'Whiteboard 2: Holds WHAT you are asking. AppConversation writes into it, AppActionButton reads it.',
+        example: `// 1. Declare in State:\nfinal messageController = TextEditingController();\n\n// 2. Dispose to prevent memory leaks:\n@override\nvoid dispose() {\n  messageController.dispose();\n  super.dispose();\n}`,
+        fields: [
+          { name: 'text', type: 'String', default: "''", desc: 'The current user message text stored in memory.' },
+          { name: 'clear()', type: 'Function', default: 'void', desc: 'Clears the question box after sending.' },
+          { name: 'dispose()', type: 'Function', default: 'void', desc: 'Frees memory when the screen is destroyed.' }
+        ]
+      },
+
+      // PHASE 4 & 5: GEN AI ENGINE
+      {
+        id: 'AiConfig',
+        name: 'AiConfig',
+        badge: 'AI Config',
+        phase: 'phase4',
+        x: 1620,
+        y: 590,
+        desc: 'Holds the AI settings: model name, API key, and the offline mock switch.',
+        example: `const config = AiConfig(\n  apiKey: 'PASTE_KEY_HERE',\n  model: 'gemini-3.5-flash-lite',\n  useMock: false,\n);`,
+        fields: [
+          { name: 'apiKey', type: 'String', default: "''", desc: 'Your Google AI Studio API key (needed when useMock is false).' },
+          { name: 'model', type: 'String', default: "'gemini-3.5-flash-lite'", desc: 'The exact Gemini model name to use.' },
+          { name: 'useMock', type: 'bool', default: 'true', desc: 'Offline mock mode. Set true for instant test replies; false for real Gemini.' }
+        ]
+      }
+    ];
+
+    // Explicit Data Flow Linkers
+    const CONNECTIONS = [
+      // WorkshopApp contains children
+      { from: 'WorkshopApp', to: 'AppLogo', label: 'contains' },
+      { from: 'WorkshopApp', to: 'AppCharacterSelector', label: 'contains' },
+      { from: 'WorkshopApp', to: 'AppConversation', label: 'contains' },
+      { from: 'WorkshopApp', to: 'AppActionButton', label: 'contains' },
+      // Theme connection
+      { from: 'WorkshopPalette', to: 'WorkshopApp', label: 'themes' },
+      // AI connection
+      { from: 'AiConfig', to: 'WorkshopApp', label: 'configures' },
+      // Phase 3 Controller Linkers (Data Flow)
+      { from: 'AppCharacterSelector', to: 'characterController', isController: true, label: 'writes who' },
+      { from: 'characterController', to: 'AppActionButton', isController: true, label: 'reads who' },
+      { from: 'AppConversation', to: 'messageController', isController: true, label: 'writes what' },
+      { from: 'messageController', to: 'AppActionButton', isController: true, label: 'reads what' }
+    ];
+
+    // Pan & Zoom Engine
+    let zoom = 0.72;
+    let panX = 40;
+    let panY = 50;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const viewport = document.getElementById('viewport');
+    const world = document.getElementById('world');
+    const zoomText = document.getElementById('zoom-text');
+    const tooltip = document.getElementById('tooltip');
+    const nodesContainer = document.getElementById('nodes-container');
+    const svgConnections = document.getElementById('svg-connections');
+    const sidebar = document.getElementById('sidebar');
+
+    function updateTransform() {
+      world.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      zoomText.textContent = `${Math.round(zoom * 100)}%`;
+    }
+
+    // Render All Cards
+    function renderNodes() {
+      nodesContainer.innerHTML = '';
+      NODES.forEach(node => {
+        const el = document.createElement('div');
+        el.className = `node ${node.isController ? 'controller-node' : ''}`;
+        el.id = `node-${node.id}`;
+        el.style.left = `${node.x}px`;
+        el.style.top = `${node.y}px`;
+
+        el.innerHTML = `
+          <div class="node-header" onclick="openSidebar('${node.id}')">
+            <span class="node-title">${node.name}</span>
+            <span class="node-badge">${node.badge}</span>
+          </div>
+          <div class="node-desc">${node.desc}</div>
+          <div class="node-fields">
+            ${node.fields.map(f => `
+              <div class="field-item" data-field='${JSON.stringify(f).replace(/'/g, "&apos;")}' data-nodename='${node.name}'>
+                <div class="field-left">
+                  <span class="field-bullet">•</span>
+                  <span class="field-name">${f.name}</span>
+                </div>
+                <div class="field-right">
+                  <span class="field-type">${f.type}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        nodesContainer.appendChild(el);
+      });
+
+      // Bind Hover for Fields
+      document.querySelectorAll('.field-item').forEach(item => {
+        item.addEventListener('mouseenter', (e) => {
+          const field = JSON.parse(item.getAttribute('data-field'));
+          const nodeName = item.getAttribute('data-nodename');
+          showTooltip(e, field, nodeName);
+        });
+        item.addEventListener('mousemove', moveTooltip);
+        item.addEventListener('mouseleave', hideTooltip);
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const nodeName = item.getAttribute('data-nodename');
+          openSidebar(nodeName);
+        });
+      });
+    }
+
+    // Render Connection Lines
+    function renderConnections() {
+      svgConnections.innerHTML = '';
+      CONNECTIONS.forEach(conn => {
+        const fromNode = NODES.find(n => n.id === conn.from);
+        const toNode = NODES.find(n => n.id === conn.to);
+        if (!fromNode || !toNode) return;
+
+        const fromEl = document.getElementById(`node-${fromNode.id}`);
+        const toEl = document.getElementById(`node-${toNode.id}`);
+        if (!fromEl || !toEl) return;
+
+        const x1 = fromNode.x + fromEl.offsetWidth / 2;
+        const y1 = fromNode.y + fromEl.offsetHeight / 2;
+        const x2 = toNode.x + toEl.offsetWidth / 2;
+        const y2 = toNode.y + toEl.offsetHeight / 2;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const cx1 = x1 + dx * 0.1;
+        const cy1 = y1 + dy * 0.6;
+        const cx2 = x2 - dx * 0.1;
+        const cy2 = y2 - dy * 0.6;
+
+        const pathData = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        path.setAttribute('class', `connection-line ${conn.isController ? 'controller-line' : ''}`);
+        svgConnections.appendChild(path);
+      });
+    }
+
+    // Tooltip Logic
+    function showTooltip(e, field, nodeName) {
+      document.getElementById('tt-title').textContent = `${nodeName}.${field.name}`;
+      document.getElementById('tt-type').textContent = field.type;
+      document.getElementById('tt-desc').textContent = field.desc;
+      document.getElementById('tt-meta').textContent = `Default: ${field.default}`;
+      tooltip.classList.add('visible');
+      moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+      const offsetX = 16;
+      const offsetY = 16;
+      let x = e.clientX + offsetX;
+      let y = e.clientY + offsetY;
+      if (x + 320 > window.innerWidth) x = e.clientX - 330;
+      if (y + 140 > window.innerHeight) y = e.clientY - 150;
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    // Clean Example Constructor Sidebar Logic
+    function openSidebar(nodeId) {
+      const node = NODES.find(n => n.id === nodeId);
+      if (!node) return;
+
+      document.getElementById('sb-title').textContent = node.name;
+      document.getElementById('sb-desc').textContent = node.desc;
+      document.getElementById('sb-code').textContent = node.example;
+
+      sidebar.classList.add('open');
+
+      document.querySelectorAll('.node').forEach(n => n.classList.remove('active-node'));
+      const activeEl = document.getElementById(`node-${node.id}`);
+      if (activeEl) activeEl.classList.add('active-node');
+    }
+
+    document.getElementById('sb-close').addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      document.querySelectorAll('.node').forEach(n => n.classList.remove('active-node'));
+    });
+
+    document.getElementById('sb-copy').addEventListener('click', () => {
+      const code = document.getElementById('sb-code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('sb-copy');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy to Clipboard', 1500);
+      });
+    });
+
+    // Phase Navigation Jumps
+    function goToPhase(phase) {
+      document.querySelectorAll('.phase-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (phase === 'all') {
+        zoom = 0.52;
+        panX = 30;
+        panY = 60;
+      } else if (phase === 'phase1') {
+        zoom = 0.78;
+        panX = 40;
+        panY = 10;
+      } else if (phase === 'phase2') {
+        zoom = 0.95;
+        panX = -1200;
+        panY = 30;
+      } else if (phase === 'phase3') {
+        zoom = 0.85;
+        panX = -180;
+        panY = -620;
+      } else if (phase === 'phase4') {
+        zoom = 0.88;
+        panX = -1180;
+        panY = -340;
+      }
+      updateTransform();
+    }
+
+    // Pan Handlers
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.node') || e.target.closest('#sidebar')) return;
+      isDragging = true;
+      viewport.classList.add('dragging');
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      viewport.classList.remove('dragging');
+    });
+
+    // Zoom Handlers
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = 1.08;
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+
+      let newZoom = e.deltaY < 0 ? zoom * zoomFactor : zoom / zoomFactor;
+      newZoom = Math.min(Math.max(newZoom, 0.3), 2.0);
+
+      panX = mouseX - (mouseX - panX) * (newZoom / zoom);
+      panY = mouseY - (mouseY - panY) * (newZoom / zoom);
+      zoom = newZoom;
+      updateTransform();
+    }, { passive: false });
+
+    document.getElementById('btn-zoom-in').addEventListener('click', () => {
+      zoom = Math.min(zoom * 1.15, 2.0);
+      updateTransform();
+    });
+
+    document.getElementById('btn-zoom-out').addEventListener('click', () => {
+      zoom = Math.max(zoom / 1.15, 0.3);
+      updateTransform();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      zoom = 0.55;
+      panX = 30;
+      panY = 50;
+      updateTransform();
+    });
+
+    // Init
+    window.addEventListener('DOMContentLoaded', () => {
+      renderNodes();
+      setTimeout(renderConnections, 40);
+      updateTransform();
+    });
+
+    window.addEventListener('resize', renderConnections);
+  </script>
+</body>
+</html>
