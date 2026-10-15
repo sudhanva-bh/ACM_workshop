@@ -15,6 +15,10 @@ const palette = WorkshopPalette(
 
 const config = AiConfig(
   apiKey: 'PASTE_YOUR_API_KEY_HERE',
+  model: 'gemini-3.5-flash-lite',
+  systemPrompt:
+      'Roleplay as {character}. Personality: {personality}. '
+      'Stay in character, be concise, witty, and engaging.',
   useMock: true,
 );
 
@@ -144,9 +148,10 @@ class AiConfig {
   const AiConfig({
     this.apiKey = '',
     this.model = 'gemini-3.5-flash-lite',
+    this.systemPrompt = '',
     this.useMock = true,
   });
-  final String apiKey, model;
+  final String apiKey, model, systemPrompt;
   final bool useMock;
 
   @override
@@ -156,10 +161,11 @@ class AiConfig {
           runtimeType == other.runtimeType &&
           apiKey == other.apiKey &&
           model == other.model &&
+          systemPrompt == other.systemPrompt &&
           useMock == other.useMock;
 
   @override
-  int get hashCode => Object.hash(apiKey, model, useMock);
+  int get hashCode => Object.hash(apiKey, model, systemPrompt, useMock);
 }
 
 class ChatMessage {
@@ -179,10 +185,17 @@ class AiModule {
   const AiModule(this.config);
   final AiConfig config;
 
-  String _instruction(String character, String personality) =>
-      'Roleplay as $character. Personality: $personality. '
-      'Stay in character while being helpful and safe. '
-      'Do not claim to really be this person.';
+  String _instruction(String character, String personality) {
+    final custom = config.systemPrompt.trim();
+    if (custom.isNotEmpty) {
+      return custom
+          .replaceAll('{character}', character)
+          .replaceAll('{personality}', personality);
+    }
+    return 'Roleplay as $character. Personality: $personality. '
+        'Stay in character while being helpful and safe. '
+        'Do not claim to really be this person.';
+  }
 
   Future<String> generate({
     required String character,

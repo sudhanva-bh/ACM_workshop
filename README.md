@@ -69,6 +69,7 @@ In Section A of any file:
 const config = AiConfig(
   apiKey: 'YOUR_GEMINI_API_KEY', // Get from aistudio.google.com/apikey
   model: 'gemini-3.5-flash-lite',
-  useMock: false, // true = offline instant mock; false = live Gemini API
+  systemPrompt: '',              // Optional: custom system prompt (supports {character} & {personality})
+  useMock: false,                // true = offline instant mock; false = live Gemini API
 );
 ```

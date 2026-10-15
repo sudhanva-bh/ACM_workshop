@@ -916,12 +916,13 @@
         phase: 'phase4',
         x: 1620,
         y: 590,
-        desc: 'Holds the AI settings: model name, API key, and the offline mock switch.',
+        desc: 'Holds the AI settings: model name, API key, system prompt, and offline mock switch.',
         exampleStandard: `const config = AiConfig(\n  apiKey: 'PASTE_KEY_HERE',\n  model: 'gemini-3.5-flash-lite',\n  useMock: true,\n);`,
-        exampleComplete: `const config = AiConfig(\n  apiKey: 'YOUR_GEMINI_KEY',\n  model: 'gemini-3.5-flash-lite',\n  useMock: false,\n);`,
+        exampleComplete: `const config = AiConfig(\n  apiKey: 'YOUR_GEMINI_KEY',\n  model: 'gemini-3.5-flash-lite',\n  systemPrompt: 'Roleplay as {character}. Personality: {personality}. Stay in character, be concise and engaging.',\n  useMock: false,\n);`,
         fields: [
           { name: 'apiKey', type: 'String', default: "''", isComplete: false, desc: 'Your Google AI Studio API key (needed when useMock is false).' },
           { name: 'model', type: 'String', default: "'gemini-3.5-flash-lite'", isComplete: false, desc: 'The exact Gemini model name to use.' },
+          { name: 'systemPrompt', type: 'String', default: "''", isComplete: true, desc: 'Custom system instruction passed to Gemini. Supports {character} and {personality} placeholders.' },
           { name: 'useMock', type: 'bool', default: 'true', isComplete: false, desc: 'Offline mock switch. Set true for instant local replies; false for real Gemini.' }
         ]
       }

@@ -13,6 +13,7 @@ classDiagram
     class AiConfig {
         +String apiKey
         +String model
+        +String systemPrompt
         +bool useMock
     }
 
@@ -116,6 +117,7 @@ classDiagram
 |---|---|---|---|---|
 | `apiKey` | `String` | `''` | Optional (Required for live API) | API key from Google AI Studio. |
 | `model` | `String` | `'gemini-3.5-flash-lite'` | Optional | Exact model name passed to the Gemini API. |
+| `systemPrompt` | `String` | `''` | Optional | Custom global system instructions passed to the LLM (supports `{character}` and `{personality}` tokens). Overrides default roleplay prompt when set. |
 | `useMock` | `bool` | `true` | Optional | When `true`, returns mock responses locally without network calls. Set to `false` for real AI. |
 
 #### `WorkshopPalette`

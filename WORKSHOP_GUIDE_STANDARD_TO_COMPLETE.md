@@ -103,6 +103,21 @@ AppActionButton(
 
 ---
 
+## Upgrade 5: Custom Global System Prompt (`AiConfig`)
+Explain: *"You can define custom global AI behavior or roleplay rules using the `systemPrompt` field in `AiConfig`. It supports `{character}` and `{personality}` tokens that auto-substitute the selected persona."*
+
+```dart
+// UPGRADE AiConfig with:
+const config = AiConfig(
+  apiKey: 'YOUR_API_KEY',
+  model: 'gemini-3.5-flash-lite',
+  systemPrompt: 'Roleplay as {character}. Personality: {personality}. Stay in character, be concise, witty, and engaging.',
+  useMock: false,
+);
+```
+
+---
+
 ## 🏆 Final Verification
 1. Hot Reload (`r`).
 2. Tap the **Yoda** chip ➔ notice the text field updates to "Yoda".

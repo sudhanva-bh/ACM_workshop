@@ -158,10 +158,11 @@ Type into the inputs. Show that tapping **Send message** reads both fields and r
 **Goal:** Introduce the Gen AI configuration layer.
 
 ### Instructor Talking Point:
-> *"To connect an LLM to Flutter, we need three things:
+> *"To connect an LLM to Flutter, we need:
 > 1. Which model we want (`gemini-3.5-flash-lite`)
 > 2. An API authentication key (from Google AI Studio)
-> 3. `useMock`: A safety switch for offline testing so we don't waste API quota while building UI."*
+> 3. `systemPrompt`: (Optional) Custom global instructions shaping the persona behavior (supports `{character}` and `{personality}`)
+> 4. `useMock`: A safety switch for offline testing so we don't waste API quota while building UI."*
 
 ### Action:
 Populate `const config` at the top of Section A:
@@ -170,7 +171,8 @@ Populate `const config` at the top of Section A:
 const config = AiConfig(
   apiKey: 'PASTE_YOUR_API_KEY_HERE',
   model: 'gemini-3.5-flash-lite',
-  useMock: true, // Offline mock mode enabled
+  systemPrompt: '', // Optional: custom system prompt (supports {character} & {personality})
+  useMock: true,    // Offline mock mode enabled
 );
 ```
 
@@ -194,7 +196,8 @@ Update `const config`:
 const config = AiConfig(
   apiKey: 'AIzaSyYourActualKeyHere', // Paste key from aistudio.google.com/apikey
   model: 'gemini-3.5-flash-lite',
-  useMock: false, // LIVE AI ENABLED!
+  systemPrompt: '',                  // Optional custom system prompt
+  useMock: false,                    // LIVE AI ENABLED!
 );
 ```
 
