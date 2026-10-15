@@ -676,12 +676,45 @@
         x: 1590,
         y: 130,
         desc: 'Configures colors and brightness across all widgets in the app.',
-        example: `const palette = WorkshopPalette(\n  primary: Color(0xFF171717),\n  secondary: Color(0xFF525252),\n  background: Color(0xFFFFFFFF),\n  surface: Color(0xFFF5F5F5),\n  brightness: Brightness.light,\n);`,
+        example: `// 🎨 PRESET THEME 1: Monochrome (Clean Black & White)
+const palette = WorkshopPalette(
+  primary: Color(0xFF171717),
+  secondary: Color(0xFF525252),
+  background: Color(0xFFFFFFFF),
+  surface: Color(0xFFF5F5F5),
+  text: Color(0xFF171717),
+  accent: Color(0xFFA3A3A3),
+  brightness: Brightness.light,
+);
+
+// 🎨 PRESET THEME 2: Midnight (Modern Dark & Lime)
+// const palette = WorkshopPalette(
+//   primary: Color(0xFF111111),
+//   secondary: Color(0xFF333333),
+//   background: Color(0xFF090909),
+//   surface: Color(0xFF1E1E1E),
+//   text: Color(0xFFF5F5F5),
+//   accent: Color(0xFFA3E635),
+//   brightness: Brightness.dark,
+// );
+
+// 🎨 PRESET THEME 3: Ocean Mist (Navy & Warm Peach)
+// const palette = WorkshopPalette(
+//   primary: Color(0xFF001B2E),
+//   secondary: Color(0xFF294C60),
+//   background: Color(0xFFFFEFD3),
+//   surface: Color(0xFFFFFFFF),
+//   text: Color(0xFF001B2E),
+//   accent: Color(0xFFFF9F68),
+//   brightness: Brightness.light,
+// );`,
         fields: [
-          { name: 'primary', type: 'Color', default: '0xFF8ABFFF', desc: 'Main accent color used for buttons and active chips.' },
-          { name: 'background', type: 'Color', default: '0xFF101215', desc: 'The background color of the whole page.' },
-          { name: 'surface', type: 'Color', default: '0xFF282C34', desc: 'The background color for cards and input fields.' },
-          { name: 'text', type: 'Color', default: '0xFFF5F7FA', desc: 'Primary typography color.' },
+          { name: 'primary', type: 'Color', default: '0xFF8ABFFF', desc: 'Main accent color used for buttons, send icons, and highlights.' },
+          { name: 'secondary', type: 'Color', default: '0xFF22364B', desc: 'Secondary brand color used for title accents and chips.' },
+          { name: 'background', type: 'Color', default: '0xFF101215', desc: 'The background color of the scaffold and entire page.' },
+          { name: 'surface', type: 'Color', default: '0xFF282C34', desc: 'Background color for inputs, message bubbles, and card containers.' },
+          { name: 'text', type: 'Color', default: '0xFFF5F7FA', desc: 'Primary typography color throughout the app.' },
+          { name: 'accent', type: 'Color', default: '0xFF8ABFFF', desc: 'Highlights, loading spinner, and chip border colors.' },
           { name: 'brightness', type: 'Brightness', default: 'Brightness.dark', desc: 'Brightness mode: Brightness.dark or Brightness.light.' }
         ]
       },

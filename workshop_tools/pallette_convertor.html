@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Palette to Flutter | App Dev Workshop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-hover: #79b8ff;
+      --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.25);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: clamp(26px, 3.5vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      max-width: 680px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 22px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+
+    .card-title span.step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--accent);
+      color: #0b1118;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    /* Preset Themes Grid */
+    .presets-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .preset-card {
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .preset-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .preset-card.active {
+      border-color: var(--accent);
+      background: rgba(88, 166, 255, 0.08);
+    }
+
+    .preset-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f0f6fc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .preset-preview-bars {
+      display: flex;
+      height: 18px;
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .preset-bar {
+      flex: 1;
+      height: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: #0d1117;
+      color: #e6edf3;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 9px 16px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      border: none;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #0b1118;
+    }
+    button.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    button.secondary {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid var(--card-border);
+    }
+    button.secondary:hover {
+      background: #30363d;
+      color: #fff;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .chip {
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 4px 8px 4px 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.15s;
+    }
+    .chip:hover {
+      border-color: #58a6ff;
+    }
+
+    .chip-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* Roles list */
+    .roles-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .role-row {
+      display: grid;
+      grid-template-columns: 125px 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      position: relative;
+    }
+
+    .role-label-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .role-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f0f6fc;
+      text-transform: capitalize;
+    }
+
+    /* Interactive Info / Tooltip Icon */
+    .role-info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(139, 148, 158, 0.2);
+      color: #8b949e;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: help;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .role-info-icon:hover {
+      background: var(--accent);
+      color: #0b1118;
+    }
+
+    .role-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      bottom: 24px;
+      background: #1c2128;
+      color: #e6edf3;
+      border: 1px solid #444c56;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11.5px;
+      line-height: 1.45;
+      width: 250px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      z-index: 100;
+      pointer-events: none;
+      transition: opacity 0.15s ease, visibility 0.15s ease;
+      font-weight: normal;
+      text-transform: none;
+    }
+
+    .role-info-icon:hover .role-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .role-select {
+      background: #161b22;
+      border: 1px solid var(--card-border);
+      color: #e6edf3;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      outline: none;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .role-hex-input {
+      background: #161b22;
+      border: 1px solid var(--card-border);
+      color: #e6edf3;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      width: 85px;
+      outline: none;
+    }
+
+    .color-picker-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 8px;
+    }
+
+    /* Phone Mockup Screen */
+    .preview-container {
+      display: flex;
+      justify-content: center;
+      position: sticky;
+      top: 24px;
+    }
+
+    .phone-frame {
+      width: 100%;
+      max-width: 380px;
+      border-radius: 36px;
+      border: 10px solid #21262d;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px #30363d;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.25s ease;
+      min-height: 590px;
+    }
+
+    .phone-notch-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 22px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.6;
+    }
+
+    .phone-body {
+      padding: 20px 18px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* Mockup: Logo */
+    .mock-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-top: 4px;
+    }
+
+    .mock-logo-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      border: 1px solid rgba(127,127,127,0.15);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .mock-logo-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .mock-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mock-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+    }
+
+    .mock-title .dot-part {
+      opacity: 0.75;
+    }
+
+    .mock-badge {
+      font-size: 8px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 8px;
+      letter-spacing: 0.8px;
+    }
+
+    .mock-subtitle {
+      font-size: 11px;
+      opacity: 0.65;
+      margin-top: 4px;
+    }
+
+    /* Mockup: Character Selector */
+    .mock-section-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 6px;
+      padding-left: 2px;
+    }
+
+    .mock-input-box {
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      border: 1px solid rgba(127,127,127,0.14);
+    }
+
+    .mock-chips-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      margin-top: 6px;
+      padding-bottom: 2px;
+    }
+
+    .mock-char-chip {
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      border: 1px solid rgba(127,127,127,0.15);
+    }
+
+    /* Mockup: Message Card */
+    .mock-msg-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mock-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid rgba(127,127,127,0.15);
+    }
+    .mock-avatar svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .mock-chat-bubble {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 12.5px;
+      line-height: 1.4;
+      border: 1px solid rgba(127,127,127,0.12);
+    }
+
+    .mock-response-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    /* Mockup: Action Button */
+    .mock-btn-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: auto;
+      padding-top: 10px;
+    }
+
+    .mock-button {
+      padding: 11px 24px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dart Output */
+    pre {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      background: #0d1117;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px;
+      color: #e6edf3;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .status-msg {
+      font-size: 12px;
+      margin-top: 8px;
+      color: #3fb950;
+      min-height: 18px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .preview-container { position: static; }
+      .phone-frame { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="badge">Workshop Tool</div>
+      <h1>Flutter Theme Studio</h1>
+      <p class="subtitle">Pick a curated preset theme or paste a custom CSS palette. Adjust with individual color pickers and copy Section A directly into your Flutter app.</p>
+    </header>
+
+    <div class="grid">
+      <!-- Left Column: Controls & Dart Export -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Step 1: Default Themes & Custom Palette Input -->
+        <section class="card">
+          <div class="card-title">
+            <span class="step">1</span>
+            <span>Choose Preset Theme or Paste Palette</span>
+          </div>
+
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">
+            PRESETS:
+          </div>
+          <div id="presets" class="presets-container"></div>
+
+          <a href="https://coolors.co/generate"
+            target="_blank"
+            rel="noopener noreferrer"
+            style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 16px 0 6px; text-decoration: underline;">
+            OR PASTE COOLORS EXPORT:
+          </a>
+          <textarea id="source"></textarea>
+          <div class="btn-row">
+            <button class="primary" id="btn-parse">Read Colors</button>
+          </div>
+          <div id="chips" class="chips"></div>
+        </section>
+
+        <!-- Step 2: Role Assignments + Custom Color Picker -->
+        <section class="card">
+          <div class="card-title">
+            <span class="step">2</span>
+            <span>Assign & Adjust Theme Colors</span>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">
+            Hover over <strong>ⓘ</strong> beside each role to see what it changes. Tweak shades with the native color picker.
+          </p>
+          <div id="roles-container" class="roles-grid"></div>
+        </section>
+
+        <!-- Step 3: Copy Code -->
+        <section class="card">
+          <div class="card-title">
+            <span class="step">3</span>
+            <span>Copy into Flutter (Section A)</span>
+          </div>
+          <pre id="output"></pre>
+          <div class="btn-row">
+            <button class="primary" id="btn-copy">Copy Dart Snippet</button>
+            <button class="secondary" id="btn-download">Download .dart</button>
+          </div>
+          <div id="status" class="status-msg"></div>
+        </section>
+      </div>
+
+      <!-- Right Column: Live App Mockup -->
+      <div class="preview-container">
+        <div class="phone-frame" id="phone-bg">
+          <div class="phone-notch-bar" id="mock-notch">
+            <span>9:41</span>
+            <span style="display: flex; gap: 4px; align-items: center;">
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><path d="M0 8h2v2H0zM4 5h2v5H4zM8 2h2v8H8zM12 0h2v10h-2z"/></svg>
+              <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><path d="M7 2C4.5 2 2.3 3.1.8 4.8L7 12l6.2-7.2C11.7 3.1 9.5 2 7 2z"/></svg>
+            </span>
+          </div>
+
+          <div class="phone-body">
+            <!-- AppLogo Widget Preview -->
+            <div class="mock-logo">
+              <div class="mock-logo-icon" id="mock-logo-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="mock-logo-svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                  <circle cx="12" cy="12" r="9" />
+                </svg>
+              </div>
+              <div class="mock-title-row">
+                <span class="mock-title" id="mock-title-text">character<span class="dot-part">.AI</span></span>
+                <span class="mock-badge" id="mock-badge-tag">PRO</span>
+              </div>
+              <div class="mock-subtitle" id="mock-subtitle-text">Roleplay with any persona</div>
+            </div>
+
+            <!-- AppCharacterSelector Widget Preview -->
+            <div>
+              <div class="mock-section-label" id="mock-label-char">Choose or type a persona</div>
+              <div class="mock-input-box" id="mock-char-input">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="mock-search-icon">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span id="mock-selected-char" style="font-weight: 600;">Socrates</span>
+              </div>
+              <div class="mock-chips-scroll">
+                <span class="mock-char-chip" id="chip-active" style="font-weight: 700;">Socrates</span>
+                <span class="mock-char-chip" id="chip-opt1">Tony Stark</span>
+                <span class="mock-char-chip" id="chip-opt2">Yoda</span>
+                <span class="mock-char-chip" id="chip-opt3">Marie Curie</span>
+              </div>
+            </div>
+
+            <!-- AppConversation Widget Preview -->
+            <div>
+              <div class="mock-section-label" id="mock-label-msg">Your message</div>
+              <div class="mock-msg-input-wrap">
+                <div class="mock-chat-bubble" id="mock-user-bubble">
+                  What is the true nature of knowledge?
+                </div>
+                <div class="mock-avatar" id="mock-user-avatar">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Response Bubble -->
+            <div class="mock-response-wrap">
+              <div class="mock-avatar" id="mock-bot-avatar">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                </svg>
+              </div>
+              <div class="mock-chat-bubble" id="mock-bot-bubble">
+                "I know that I know nothing." Wisdom begins when one questions what one assumes to be true.
+              </div>
+            </div>
+
+            <!-- AppActionButton Preview -->
+            <div class="mock-btn-wrap">
+              <div class="mock-button" id="mock-action-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+                <span>Generate response</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // PRESET PALETTES: Curated workshop themes with numbered presets
+    const defaultThemes = [
+      {
+        id: 'monochrome',
+        name: '1. Monochrome',
+        palette: {
+          primary: '#171717',
+          secondary: '#525252',
+          background: '#FFFFFF',
+          surface: '#F5F5F5',
+          text: '#171717',
+          accent: '#A3A3A3',
+          brightness: 'light'
+        }
+      },
+      {
+        id: 'midnight',
+        name: '2. Midnight',
+        palette: {
+          primary: '#111111',
+          secondary: '#333333',
+          background: '#090909',
+          surface: '#1E1E1E',
+          text: '#F5F5F5',
+          accent: '#A3E635',
+          brightness: 'dark'
+        }
+      },
+      {
+        id: 'ocean-mist',
+        name: '3. Ocean Mist',
+        palette: {
+          primary: '#001B2E',
+          secondary: '#294C60',
+          background: '#FFEFD3',
+          surface: '#FFFFFF',
+          text: '#001B2E',
+          accent: '#FF9F68',
+          brightness: 'light'
+        }
+      },
+      {
+        id: 'lavender',
+        name: '4. Lavender Dreams',
+        palette: {
+          primary: '#6D28D9',
+          secondary: '#A78BFA',
+          background: '#F8F7FF',
+          surface: '#EDE9FE',
+          text: '#27164A',
+          accent: '#F472B6',
+          brightness: 'light'
+        }
+      },
+      {
+        id: 'forest',
+        name: '5. Forest Earth',
+        palette: {
+          primary: '#164E3B',
+          secondary: '#42836B',
+          background: '#F6F5ED',
+          surface: '#E0EBDC',
+          text: '#18362A',
+          accent: '#E8A857',
+          brightness: 'light'
+        }
+      },
+      {
+        id: 'lilac-slate',
+        name: '6. Lilac & Slate',
+        palette: {
+          primary: '#374A67',
+          secondary: '#374A67',
+          background: '#CB9CF2',
+          surface: '#F3F4F6',
+          text: '#0E1116',
+          accent: '#CB9CF2',
+          brightness: 'light'
+        }
+      },
+      {
+        id: 'amber-sunset',
+        name: '7. Amber Sunset',
+        palette: {
+          primary: '#C2410C',
+          secondary: '#EA580C',
+          background: '#FFFBEB',
+          surface: '#FEF3C7',
+          text: '#451A03',
+          accent: '#F59E0B',
+          brightness: 'light'
+        }
+      },
+      {
+        id: 'crimson-dark',
+        name: '8. Crimson Cyber',
+        palette: {
+          primary: '#E11D48',
+          secondary: '#BE123C',
+          background: '#0F172A',
+          surface: '#1E293B',
+          text: '#F8FAFC',
+          accent: '#FB7185',
+          brightness: 'dark'
+        }
+      }
+    ];
+
+    const defaultSourceText = `/* CSS HEX */
+--ink-black: #0e1116ff;
+--dusk-blue: #374a67ff;
+--dusty-grape: #616283ff;
+--dusty-mauve: #9e7b9bff;
+--wisteria: #cb9cf2ff;
+
+/* CSS HSL */
+--ink-black: hsla(218, 22%, 7%, 1);
+--dusk-blue: hsla(216, 30%, 31%, 1);
+--dusty-grape: hsla(238, 15%, 45%, 1);
+--dusty-mauve: hsla(305, 15%, 55%, 1);
+--wisteria: hsla(273, 77%, 78%, 1);
+
+/* SCSS HEX */
+$ink-black: #0e1116ff;
+$dusk-blue: #374a67ff;
+$dusty-grape: #616283ff;
+$dusty-mauve: #9e7b9bff;
+$wisteria: #cb9cf2ff;
+
+/* SCSS HSL */
+$ink-black: hsla(218, 22%, 7%, 1);
+$dusk-blue: hsla(216, 30%, 31%, 1);
+$dusty-grape: hsla(238, 15%, 45%, 1);
+$dusty-mauve: hsla(305, 15%, 55%, 1);
+$wisteria: hsla(273, 77%, 78%, 1);
+
+/* SCSS RGB */
+$ink-black: rgba(14, 17, 22, 1);
+$dusk-blue: rgba(55, 74, 103, 1);
+$dusty-grape: rgba(97, 98, 131, 1);
+$dusty-mauve: rgba(158, 123, 155, 1);
+$wisteria: rgba(203, 156, 242, 1);
+
+/* SCSS Gradient */
+$gradient-top: linear-gradient(0deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-right: linear-gradient(90deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-bottom: linear-gradient(180deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-left: linear-gradient(270deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-top-right: linear-gradient(45deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-bottom-right: linear-gradient(135deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-top-left: linear-gradient(225deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-bottom-left: linear-gradient(315deg, #0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);
+$gradient-radial: radial-gradient(#0e1116ff, #374a67ff, #616283ff, #9e7b9bff, #cb9cf2ff);`;
+
+    const roleDefs = [
+      {
+        key: 'primary',
+        label: 'Primary',
+        defaultHex: '#171717',
+        description: 'Main brand & action color. Changes the "Generate response" button, logo icon, search icon, and bot avatar.'
+      },
+      {
+        key: 'secondary',
+        label: 'Secondary',
+        defaultHex: '#525252',
+        description: 'Secondary brand color. Changes the colored dot in the logo title ("character.AI") and subtitle highlights.'
+      },
+      {
+        key: 'background',
+        label: 'Background',
+        defaultHex: '#FFFFFF',
+        description: 'The overall scaffold background color of the entire screen/phone frame.'
+      },
+      {
+        key: 'surface',
+        label: 'Surface',
+        defaultHex: '#F5F5F5',
+        description: 'Card & container color. Changes character selector input, user/bot message bubbles, and persona chips.'
+      },
+      {
+        key: 'text',
+        label: 'Text',
+        defaultHex: '#171717',
+        description: 'Main typography color. Changes headers, titles, section labels, and chat message body text.'
+      },
+      {
+        key: 'accent',
+        label: 'Accent',
+        defaultHex: '#A3A3A3',
+        description: 'Interactive highlights & focus color. Changes active selected persona chips and loading spinners.'
+      }
+    ];
+
+    let currentColors = [];
+    const roleValues = { ...defaultThemes[0].palette };
+    delete roleValues.brightness;
+
+    const $ = id => document.getElementById(id);
+
+    function normalizeHex(h) {
+      if (!h) return '#000000';
+      let c = h.trim();
+      if (!c.startsWith('#')) c = '#' + c;
+      if (c.length === 4) {
+        c = '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+      }
+      if (c.length > 7) {
+        c = c.slice(0, 7);
+      }
+      return c.toLowerCase();
+    }
+
+    function hexToArgb(hex) {
+      const clean = hex.replace('#', '').toUpperCase();
+      const rgb = clean.length === 3
+        ? clean.split('').map(x => x + x).join('')
+        : clean.slice(0, 6).padEnd(6, '0');
+      return `0xFF${rgb}`;
+    }
+
+    function getLuminance(hex) {
+      const h = hex.replace('#', '');
+      const num = parseInt(h, 16);
+      const r = (num >> 16) & 255;
+      const g = (num >> 8) & 255;
+      const b = num & 255;
+      const [rs, gs, bs] = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    }
+
+    function getContrastColor(hex) {
+      return getLuminance(hex) > 0.25 ? '#111827' : '#ffffff';
+    }
+
+    function renderPresetThemes() {
+      const presetsEl = $('presets');
+      presetsEl.innerHTML = '';
+
+      defaultThemes.forEach((item, idx) => {
+        const btn = document.createElement('div');
+        btn.className = `preset-card ${idx === 0 ? 'active' : ''}`;
+        btn.id = `preset-${item.id}`;
+        
+        btn.innerHTML = `
+          <div class="preset-name">${item.name}</div>
+          <div class="preset-preview-bars">
+            <div class="preset-bar" style="background:${item.palette.primary}" title="Primary"></div>
+            <div class="preset-bar" style="background:${item.palette.secondary}" title="Secondary"></div>
+            <div class="preset-bar" style="background:${item.palette.background}" title="Background"></div>
+            <div class="preset-bar" style="background:${item.palette.surface}" title="Surface"></div>
+            <div class="preset-bar" style="background:${item.palette.accent}" title="Accent"></div>
+          </div>
+        `;
+
+        btn.onclick = () => loadTheme(item);
+        presetsEl.appendChild(btn);
+      });
+    }
+
+    function loadTheme(theme) {
+      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      const activeEl = $(`preset-${theme.id}`);
+      if (activeEl) activeEl.classList.add('active');
+
+      Object.assign(roleValues, {
+        primary: theme.palette.primary,
+        secondary: theme.palette.secondary,
+        background: theme.palette.background,
+        surface: theme.palette.surface,
+        text: theme.palette.text,
+        accent: theme.palette.accent
+      });
+
+      // Populate current colors from preset
+      currentColors = [
+        { name: 'primary', hex: theme.palette.primary },
+        { name: 'secondary', hex: theme.palette.secondary },
+        { name: 'background', hex: theme.palette.background },
+        { name: 'surface', hex: theme.palette.surface },
+        { name: 'text', hex: theme.palette.text },
+        { name: 'accent', hex: theme.palette.accent },
+      ];
+
+      // Render Chips
+      const chipsEl = $('chips');
+      chipsEl.innerHTML = '';
+      currentColors.forEach(c => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `<span class="chip-swatch" style="background:${c.hex}"></span><span>${c.name} (${c.hex})</span>`;
+        chipsEl.appendChild(chip);
+      });
+
+      renderRoleInputs();
+      updatePreviewAndOutput();
+    }
+
+    function parseInput() {
+      const text = $('source').value;
+      const found = new Map();
+
+      // Look for standard CSS variable declaration: --var-name: #hex;
+      const regex = /^\s*(?:--|\$)([a-z0-9_-]+)\s*:\s*(#[0-9a-fA-F]{3,8})/gm;
+      let m;
+      while ((m = regex.exec(text)) !== null) {
+        const name = m[1];
+        const hex = normalizeHex(m[2]);
+        if (!found.has(name)) found.set(name, hex);
+      }
+
+      // Fallback: search for any hex codes if no variables matched
+      if (found.size === 0) {
+        const rawHexes = text.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
+        rawHexes.forEach((raw, i) => {
+          const hex = normalizeHex(raw);
+          if (![...found.values()].includes(hex)) {
+            found.set(`color-${i + 1}`, hex);
+          }
+        });
+      }
+
+      currentColors = [...found.entries()].map(([name, hex]) => ({ name, hex }));
+
+      // Render Chips
+      const chipsEl = $('chips');
+      chipsEl.innerHTML = '';
+      currentColors.forEach(c => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.innerHTML = `<span class="chip-swatch" style="background:${c.hex}"></span><span>${c.name} (${c.hex})</span>`;
+        chipsEl.appendChild(chip);
+      });
+
+      if (currentColors.length > 0) {
+        autoAssignRoles();
+        document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      }
+
+      renderRoleInputs();
+      updatePreviewAndOutput();
+    }
+
+    function autoAssignRoles() {
+      const n = currentColors.length;
+      if (n === 0) return;
+
+      const findByName = (...terms) => {
+        const item = currentColors.find(c => terms.some(t => c.name.toLowerCase().includes(t)));
+        return item ? item.hex : null;
+      };
+
+      const sortedByLum = [...currentColors].sort((a, b) => getLuminance(b.hex) - getLuminance(a.hex));
+      const highestLum = sortedByLum[0].hex;
+      const lowestLum = sortedByLum[sortedByLum.length - 1].hex;
+
+      const bg = findByName('wisteria', 'bg', 'background', 'paper', 'light') || highestLum;
+      const isLightBg = getLuminance(bg) > 0.4;
+
+      roleValues.background = bg;
+      roleValues.text = findByName('ink-black', 'text', 'font', 'ink') || (isLightBg ? lowestLum : highestLum);
+      roleValues.primary = findByName('dusk-blue', 'primary', 'blue', 'main') || currentColors[0].hex;
+      roleValues.secondary = findByName('dusk-blue', 'secondary', 'slate', 'charcoal') || (currentColors[1] ? currentColors[1].hex : roleValues.primary);
+      roleValues.surface = findByName('surface', 'card', 'box') || (isLightBg ? '#f3f4f6' : '#1f2937');
+      roleValues.accent = findByName('wisteria', 'accent', 'cyan', 'peach', 'highlight') || (currentColors[currentColors.length - 1].hex);
+    }
+
+    function renderRoleInputs() {
+      const container = $('roles-container');
+      container.innerHTML = '';
+
+      roleDefs.forEach(def => {
+        const key = def.key;
+        const currentHex = normalizeHex(roleValues[key]);
+
+        const row = document.createElement('div');
+        row.className = 'role-row';
+
+        // 1. Label with Interactive Tooltip
+        const labelContainer = document.createElement('div');
+        labelContainer.className = 'role-label-container';
+
+        const label = document.createElement('span');
+        label.className = 'role-name';
+        label.textContent = def.label;
+
+        const infoIcon = document.createElement('span');
+        infoIcon.className = 'role-info-icon';
+        infoIcon.textContent = 'i';
+        infoIcon.innerHTML = `i<span class="role-tooltip"><strong>${def.label}:</strong> ${def.description}</span>`;
+
+        labelContainer.appendChild(label);
+        labelContainer.appendChild(infoIcon);
+
+        // 2. Select dropdown (with parsed palette items)
+        const select = document.createElement('select');
+        select.className = 'role-select';
+        
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = currentHex;
+        defaultOpt.textContent = `Current: ${currentHex}`;
+        select.appendChild(defaultOpt);
+
+        currentColors.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.hex;
+          opt.textContent = `${c.name} (${c.hex})`;
+          if (c.hex.toLowerCase() === currentHex.toLowerCase()) {
+            opt.selected = true;
+          }
+          select.appendChild(opt);
+        });
+
+        // 3. Hex code text input
+        const hexInput = document.createElement('input');
+        hexInput.type = 'text';
+        hexInput.className = 'role-hex-input';
+        hexInput.value = currentHex;
+        hexInput.maxLength = 7;
+
+        // 4. Color picker
+        const picker = document.createElement('input');
+        picker.type = 'color';
+        picker.value = currentHex;
+
+        // Sync handlers
+        picker.addEventListener('input', e => {
+          const val = e.target.value.toLowerCase();
+          roleValues[key] = val;
+          hexInput.value = val;
+          defaultOpt.value = val;
+          defaultOpt.textContent = `Custom: ${val}`;
+          select.value = val;
+          updatePreviewAndOutput();
+        });
+
+        hexInput.addEventListener('change', e => {
+          const val = normalizeHex(e.target.value);
+          roleValues[key] = val;
+          picker.value = val;
+          defaultOpt.value = val;
+          defaultOpt.textContent = `Custom: ${val}`;
+          select.value = val;
+          updatePreviewAndOutput();
+        });
+
+        select.addEventListener('change', e => {
+          const val = normalizeHex(e.target.value);
+          roleValues[key] = val;
+          hexInput.value = val;
+          picker.value = val;
+          updatePreviewAndOutput();
+        });
+
+        row.appendChild(labelContainer);
+        row.appendChild(select);
+        row.appendChild(hexInput);
+        row.appendChild(picker);
+        container.appendChild(row);
+      });
+    }
+
+    function updatePreviewAndOutput() {
+      const primary = normalizeHex(roleValues.primary);
+      const secondary = normalizeHex(roleValues.secondary);
+      const background = normalizeHex(roleValues.background);
+      const surface = normalizeHex(roleValues.surface);
+      const text = normalizeHex(roleValues.text);
+      const accent = normalizeHex(roleValues.accent);
+
+      const isLightBg = getLuminance(background) > 0.25;
+      const brightness = isLightBg ? 'light' : 'dark';
+
+      // 1. Update Preview: Phone Container & Notch
+      const phone = $('phone-bg');
+      phone.style.backgroundColor = background;
+      phone.style.color = text;
+
+      const notch = $('mock-notch');
+      notch.style.color = text;
+
+      // 2. Mock AppLogo Widget
+      const logoBox = $('mock-logo-box');
+      logoBox.style.backgroundColor = surface;
+      logoBox.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+      const logoSvg = $('mock-logo-svg');
+      logoSvg.style.color = primary;
+
+      const titleText = $('mock-title-text');
+      titleText.style.color = text;
+
+      const dotPart = titleText.querySelector('.dot-part');
+      if (dotPart) dotPart.style.color = secondary;
+
+      const badge = $('mock-badge-tag');
+      badge.style.backgroundColor = primary + '20';
+      badge.style.color = primary;
+
+      const subtitle = $('mock-subtitle-text');
+      subtitle.style.color = text;
+
+      // 3. Mock AppCharacterSelector Widget
+      const charInput = $('mock-char-input');
+      charInput.style.backgroundColor = surface;
+      charInput.style.color = text;
+      charInput.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+      $('mock-search-icon').style.color = primary;
+      $('mock-label-char').style.color = text;
+
+      const chipActive = $('chip-active');
+      chipActive.style.backgroundColor = primary + '25';
+      chipActive.style.color = text;
+      chipActive.style.borderColor = primary + '60';
+
+      ['chip-opt1', 'chip-opt2', 'chip-opt3'].forEach(id => {
+        const el = $(id);
+        el.style.backgroundColor = surface;
+        el.style.color = text;
+        el.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+      });
+
+      // 4. Mock AppConversation Widget
+      $('mock-label-msg').style.color = text;
+
+      const userBubble = $('mock-user-bubble');
+      userBubble.style.backgroundColor = surface;
+      userBubble.style.color = text;
+      userBubble.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+      const userAvatar = $('mock-user-avatar');
+      userAvatar.style.backgroundColor = surface;
+      userAvatar.style.color = text;
+      userAvatar.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+      const botBubble = $('mock-bot-bubble');
+      botBubble.style.backgroundColor = surface;
+      botBubble.style.color = text;
+      botBubble.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+      const botAvatar = $('mock-bot-avatar');
+      botAvatar.style.backgroundColor = surface;
+      botAvatar.style.color = primary;
+      botAvatar.style.borderColor = isLightBg ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+      // 5. Mock AppActionButton
+      const actionBtn = $('mock-action-btn');
+      actionBtn.style.backgroundColor = primary;
+      actionBtn.style.color = getContrastColor(primary);
+
+      // 6. Generate Dart Code for Section A
+      const dartCode = `// ================= SECTION A: EDIT THIS =================
+const palette = WorkshopPalette(
+  primary: Color(${hexToArgb(primary)}),
+  secondary: Color(${hexToArgb(secondary)}),
+  background: Color(${hexToArgb(background)}),
+  surface: Color(${hexToArgb(surface)}),
+  text: Color(${hexToArgb(text)}),
+  accent: Color(${hexToArgb(accent)}),
+  brightness: Brightness.${brightness},
+);`;
+
+      $('output').textContent = dartCode;
+    }
+
+    // Event Listeners
+    $('btn-parse').onclick = parseInput;
+
+    $('btn-copy').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText($('output').textContent);
+        $('status').textContent = '✓ Copied to clipboard!';
+        setTimeout(() => $('status').textContent = '', 3000);
+      } catch (err) {
+        $('status').textContent = 'Please select and copy manually.';
+      }
+    };
+
+    $('btn-download').onclick = () => {
+      const blob = new Blob([$('output').textContent + '\n'], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'workshop_palette.dart';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    // Initialize: default to Monochrome
+    renderPresetThemes();
+    loadTheme(defaultThemes[0]);
+  </script>
+</body>
+</html>
