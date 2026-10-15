@@ -174,7 +174,7 @@ const config = AiConfig(
 );
 ```
 
-⚡ **Hit Hot Reload & Test:**
+⚡ **Hit Hot Reload (`r`):**
 Tap **Send message**. Explain:
 > *"Because `useMock: true`, our app simulates Gemini responses instantly offline! This is how you test error states, loading spinners, and layout before touching real APIs."*
 
@@ -198,7 +198,10 @@ const config = AiConfig(
 );
 ```
 
-⚡ **Live Demo Test:**
+⚡ **Hit Hot Reload (`r`):**  
+*(Note: If changes do not reflect, press `Shift + R` or `R` in the terminal for a full Hot Restart).*
+
+**Live Demo Test:**
 1. In the Character box, type: `Yoda` or `Albert Einstein` or `Sherlock Holmes`.
 2. In the Question box, type: `Explain how airplanes fly in one sentence.`
 3. Tap **Send message**!

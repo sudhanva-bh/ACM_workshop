@@ -75,6 +75,18 @@ class AiConfig {
   });
   final String apiKey, model;
   final bool useMock;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AiConfig &&
+          runtimeType == other.runtimeType &&
+          apiKey == other.apiKey &&
+          model == other.model &&
+          useMock == other.useMock;
+
+  @override
+  int get hashCode => Object.hash(apiKey, model, useMock);
 }
 
 class ChatMessage {
@@ -194,8 +206,8 @@ class AiModule {
 
 class PersonaEngine extends ChangeNotifier {
   PersonaEngine({required this.ai, this.useMock = true});
-  final AiModule ai;
-  final bool useMock;
+  AiModule ai;
+  bool useMock;
   String selectedCharacter = 'Socrates';
   String selectedAvatarUrl = '';
   IconData? selectedAvatarIcon;
@@ -209,6 +221,11 @@ class PersonaEngine extends ChangeNotifier {
   bool get hasSubmitted => prompt.isNotEmpty;
   void _notify() {
     if (!_disposed) notifyListeners();
+  }
+
+  void updateConfig(AiConfig config) {
+    ai = AiModule(config);
+    useMock = config.useMock;
   }
 
   void selectCharacter(WorkshopCharacter character) {
@@ -359,6 +376,14 @@ class _WorkshopAppState extends State<WorkshopApp> {
         ai: AiModule(widget.config),
         useMock: widget.config.useMock,
       );
+
+  @override
+  void didUpdateWidget(WorkshopApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.engine == null && widget.config != oldWidget.config) {
+      _engine.updateConfig(widget.config);
+    }
+  }
 
   @override
   void dispose() {

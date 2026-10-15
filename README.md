@@ -33,8 +33,14 @@ A hands-on workshop building a dual-controller Gen AI roleplay app powered by **
 - **[`WORKSHOP_WIDGETS_AND_CONFIGS.md`](./WORKSHOP_WIDGETS_AND_CONFIGS.md)**  
   Complete field reference and Mermaid architecture diagram for all widgets and configs.
 
-- **[`workshop_architecture.html`](./workshop_architecture.html)**  
+- **[`pallettes.md`](./pallettes.md)**  
+  5 curated, copy-paste color palette themes (Midnight, Monochrome, Ocean Mist, Lavender Dreams, Forest Green) for `WorkshopPalette`.
+
+- **[`workshop_tools/workshop_architecture.html`](./workshop_tools/workshop_architecture.html)**  
   Interactive, zoomable/pannable dark visualizer. Click any class to get a clean copyable constructor snippet, or click the phase buttons to jump between workshop sections.
+
+- **[`workshop_tools/pallette_convertor.html`](./workshop_tools/pallette_convertor.html)**  
+  Interactive web-based palette customizer and Flutter code generator with live color pickers and luminance-safe preview cards.
 
 ---
 
