@@ -15,7 +15,7 @@ const palette = WorkshopPalette(
 
 const config = AiConfig(
   apiKey: '',
-  useMock: false,
+  useMock: true,
 );
 
 void main() => runApp(const MyPersonaApp());
