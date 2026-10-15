@@ -346,6 +346,140 @@
       border-color: #6b7280;
     }
 
+    .nav-divider {
+      width: 1px;
+      height: 22px;
+      background: #2d3340;
+      margin: 0 4px;
+    }
+
+    /* All Fields Toggle Button in Nav */
+    .complete-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: #1b202a;
+      border: 1px solid #323a48;
+      color: #9ca3af;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      user-select: none;
+    }
+
+    .complete-toggle-btn:hover {
+      background: #232a38;
+      color: #fff;
+      border-color: #4b5563;
+    }
+
+    .complete-toggle-btn.active {
+      background: #252b38;
+      border-color: #6b7280;
+      color: #fff;
+    }
+
+    .toggle-pill {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #252b36;
+      color: #8b949e;
+      transition: all 0.16s ease;
+    }
+
+    .complete-toggle-btn.active .toggle-pill {
+      background: #e6edf3;
+      color: #0d0f12;
+    }
+
+    /* Complete-only Field: Slightly Lighter White Box */
+    .field-item.is-upgrade {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      margin: 1px 0;
+    }
+
+    .field-item.is-upgrade:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    /* Complete Node Styling (WorkshopCharacter) */
+    .node.complete-node {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .node.complete-node .node-header {
+      background: #1b1f28;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .node.complete-node .node-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #e6edf3;
+    }
+
+    /* Complete SVG Connection line */
+    .complete-line {
+      stroke: #6b7280 !important;
+      stroke-dasharray: 6 4 !important;
+      stroke-width: 1.5 !important;
+    }
+
+    /* Sidebar Mode Switcher */
+    .sidebar-mode-switcher {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-subtitle {
+      font-size: 11px;
+      color: #8b949e;
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sb-toggle-group {
+      display: flex;
+      background: #0d0f12;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .sb-tab {
+      background: transparent;
+      border: none;
+      color: #8b949e;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .sb-tab:hover {
+      color: #fff;
+    }
+
+    .sb-tab.active {
+      background: #252b38;
+      color: #fff;
+    }
+
     /* Zoom Controls Dock */
     .controls-dock {
       position: fixed;
@@ -493,10 +627,16 @@
 </head>
 <body>
 
-  <!-- Top Navigation with Workshop Phase Jumps -->
+  <!-- Top Navigation with Workshop Phase Jumps & Show All Fields Toggle -->
   <header class="nav-bar">
     <div class="nav-left">
       <span class="nav-title">Workshop Architecture</span>
+      <span class="nav-divider"></span>
+      <!-- Mode Toggle for Standard vs All Fields -->
+      <button id="toggle-complete-btn" class="complete-toggle-btn" onclick="toggleCompleteMode()" title="Toggle visibility of all fields">
+        <span class="toggle-label">Show all fields</span>
+        <span class="toggle-pill" id="toggle-pill">OFF</span>
+      </button>
     </div>
 
     <div class="phase-buttons">
@@ -565,12 +705,19 @@
     <div class="sidebar-header">
       <div>
         <div class="sidebar-title" id="sb-title">AppActionButton</div>
+        <div class="sidebar-subtitle" id="sb-subtitle">Standard Implementation</div>
       </div>
       <button class="close-btn" id="sb-close">&times;</button>
     </div>
     <div class="sidebar-desc" id="sb-desc">Short description of this class.</div>
 
-    <div class="section-label">Example Constructor</div>
+    <div class="sidebar-mode-switcher">
+      <span class="section-label">Example Constructor</span>
+      <div class="sb-toggle-group">
+        <button id="sb-tab-std" class="sb-tab active" onclick="switchSidebarTab('standard')">Standard</button>
+        <button id="sb-tab-comp" class="sb-tab" onclick="switchSidebarTab('complete')">Complete</button>
+      </div>
+    </div>
     <div class="code-container">
       <pre class="code-snippet" id="sb-code"></pre>
       <button class="copy-btn" id="sb-copy">Copy to Clipboard</button>
@@ -578,6 +725,10 @@
   </aside>
 
   <script>
+    // State: Complete Mode Toggle
+    let isCompleteMode = false;
+    let selectedNodeId = null;
+
     // Workshop Architecture Data organized by Phase
     const NODES = [
       // PHASE 1: SKELETON (Core Shell & 4 Widgets)
@@ -589,13 +740,15 @@
         x: 610,
         y: 130,
         desc: 'The prebuilt app shell. It handles scrolling, margins, and holds the widgets in Section A.',
-        example: `WorkshopApp(\n  title: 'character.AI',\n  palette: palette,\n  config: config,\n  children: [\n    // Put your 4 core widgets here\n  ],\n)`,
+        exampleStandard: `WorkshopApp(\n  title: 'character.AI',\n  palette: palette,\n  config: config,\n  children: [\n    // Put your 4 core widgets here\n  ],\n)`,
+        exampleComplete: `WorkshopApp(\n  title: 'character.AI',\n  palette: palette,\n  config: config,\n  children: [\n    // 4 fully upgraded widgets\n  ],\n)`,
         fields: [
-          { name: 'children', type: 'List<Widget>', default: 'const []', desc: 'The list of widgets shown on screen in vertical order.' },
-          { name: 'palette', type: 'WorkshopPalette', default: 'const WorkshopPalette()', desc: 'The color theme applied to the app.' },
-          { name: 'config', type: 'AiConfig', default: 'const AiConfig()', desc: 'The AI connection settings (API key, model, mock mode).' },
-          { name: 'title', type: 'String', default: "'character.AI'", desc: 'The title string of the app.' },
-          { name: 'controller', type: 'TextEditingController?', default: 'null', desc: 'Optional shared root text controller.' }
+          { name: 'children', type: 'List<Widget>', default: 'const []', isComplete: false, desc: 'The list of widgets shown on screen in vertical order.' },
+          { name: 'palette', type: 'WorkshopPalette', default: 'const WorkshopPalette()', isComplete: false, desc: 'The color theme applied to the app.' },
+          { name: 'config', type: 'AiConfig', default: 'const AiConfig()', isComplete: false, desc: 'The AI connection settings (API key, model, mock mode).' },
+          { name: 'title', type: 'String', default: "'character.AI'", isComplete: false, desc: 'The title string of the app.' },
+          { name: 'controller', type: 'TextEditingController?', default: 'null', isComplete: false, desc: 'Optional shared root text controller.' },
+          { name: 'engine', type: 'PersonaEngine?', default: 'null', isComplete: true, desc: 'Optional custom state engine instance override.' }
         ]
       },
       {
@@ -606,13 +759,15 @@
         x: 70,
         y: 440,
         desc: 'The header block displaying the app title and brand icon.',
-        example: `const AppLogo(\n  title: 'character.AI',\n  subtitle: 'Roleplay with any persona',\n  icon: Icons.psychology_rounded,\n)`,
+        exampleStandard: `const AppLogo(\n  title: 'character.AI',\n  subtitle: 'Roleplay with any fictional or historical persona',\n  icon: Icons.psychology_rounded,\n)`,
+        exampleComplete: `const AppLogo(\n  title: 'character.AIrL',\n  subtitle: 'Roleplay with any fictional or historical persona',\n  icon: Icons.psychology_rounded,\n  badgeText: 'PRO',                  // Pill badge\n  alignment: CrossAxisAlignment.center, // Alignment (center / start)\n  titleColor: Color(0xFF171717),      // Direct title color override\n)`,
         fields: [
-          { name: 'title', type: 'String', default: "'character.AI'", desc: "The main title text. The dot '.' splits color between primary and secondary." },
-          { name: 'subtitle', type: 'String', default: "''", desc: 'Short tagline text shown underneath the title.' },
-          { name: 'icon', type: 'IconData?', default: 'null', desc: 'Circled icon displayed above the title.' },
-          { name: 'badgeText', type: 'String', default: "''", desc: "Small badge tag next to the title (e.g. 'PRO' or 'V2')." },
-          { name: 'alignment', type: 'CrossAxisAlignment', default: 'center', desc: 'Horizontal alignment: center, start, or end.' }
+          { name: 'title', type: 'String', default: "'character.AI'", isComplete: false, desc: "The main title text. The dot '.' splits color between primary and secondary." },
+          { name: 'subtitle', type: 'String', default: "''", isComplete: false, desc: 'Short tagline text shown underneath the title.' },
+          { name: 'icon', type: 'IconData?', default: 'null', isComplete: false, desc: 'Circled icon displayed above the title.' },
+          { name: 'badgeText', type: 'String', default: "''", isComplete: true, desc: "Small uppercase pill badge next to the title (e.g. 'PRO' or 'V2')." },
+          { name: 'alignment', type: 'CrossAxisAlignment', default: 'center', isComplete: true, desc: 'Horizontal alignment: CrossAxisAlignment.center, start, or end.' },
+          { name: 'titleColor', type: 'Color?', default: 'null', isComplete: true, desc: 'Direct color override for the title text.' }
         ]
       },
       {
@@ -622,13 +777,14 @@
         phase: 'phase1',
         x: 430,
         y: 440,
-        desc: 'Text input where users type the character they want to talk to.',
-        example: `AppCharacterSelector(\n  controller: characterController,\n  hint: 'Who do you want to talk to? (e.g. Socrates, Yoda)',\n)`,
+        desc: 'Text input where users type the character they want to talk to, with optional preset chips.',
+        exampleStandard: `AppCharacterSelector(\n  controller: characterController,\n  hint: 'Who do you want to talk to? (e.g. Socrates, Yoda, Einstein)',\n)`,
+        exampleComplete: `AppCharacterSelector(\n  controller: characterController,\n  label: 'CHOOSE OR TYPE A PERSONA', // Uppercase header\n  hint: 'Type any persona (e.g. Socrates, Yoda, Einstein)...',\n  characters: const [                 // Quick-select persona chips\n    WorkshopCharacter(\n      'Socrates',\n      subtitle: 'Classical Philosopher',\n      personality: 'Deep, questioning, intellectual, and uses the Socratic method.',\n      avatarIcon: Icons.auto_stories_rounded,\n    ),\n    WorkshopCharacter(\n      'Tony Stark',\n      subtitle: 'Genius & Superhero',\n      personality: 'Sarcastic, witty, brilliant, and confident.',\n      avatarIcon: Icons.bolt_rounded,\n    ),\n    WorkshopCharacter(\n      'Yoda',\n      subtitle: 'Grand Jedi Master',\n      personality: 'Wise, speaks in inverted sentences, patient.',\n      avatarIcon: Icons.self_improvement_rounded,\n    ),\n  ],\n)`,
         fields: [
-          { name: 'controller', type: 'TextEditingController?', default: 'null', desc: 'Whiteboard 1: Stores who the user typed to talk to.' },
-          { name: 'hint', type: 'String', default: "'Type any character...'", desc: 'Placeholder text shown when the box is empty.' },
-          { name: 'label', type: 'String', default: "'CHARACTER / PERSONA'", desc: 'Label text shown directly above the input box.' },
-          { name: 'characters', type: 'List<WorkshopCharacter>', default: 'const []', desc: 'Optional preset chips for 1-tap character selection.' }
+          { name: 'controller', type: 'TextEditingController?', default: 'null', isComplete: false, desc: 'Whiteboard 1: Stores who the user typed to talk to.' },
+          { name: 'hint', type: 'String', default: "'Type any character...'", isComplete: false, desc: 'Placeholder text shown when the input box is empty.' },
+          { name: 'label', type: 'String', default: "'CHARACTER / PERSONA'", isComplete: true, desc: 'Section header text shown directly above the input box.' },
+          { name: 'characters', type: 'List<WorkshopCharacter>', default: 'const []', isComplete: true, desc: 'Preset chips for 1-tap persona selection with custom system prompts.' }
         ]
       },
       {
@@ -639,13 +795,17 @@
         x: 790,
         y: 440,
         desc: 'Text input where users type their message, and where AI responses appear.',
-        example: `AppConversation(\n  controller: messageController,\n  hint: 'Ask anything...',\n)`,
+        exampleStandard: `AppConversation(\n  controller: messageController,\n  hint: 'Ask anything...',\n)`,
+        exampleComplete: `AppConversation(\n  controller: messageController,\n  label: 'YOUR MESSAGE',                                 // Section label\n  hint: 'Ask anything (philosophy, science, advice)...', // Custom placeholder\n  showClearButton: true,                                 // Clear text icon\n  bubbleRadius: 16.0,                                    // Corner curvature\n  inputMaxLines: 4,                                      // Expandable input height\n  userBubbleColor: const Color(0xFFF0F0F0),              // Custom user bubble\n  botBubbleColor: const Color(0xFFFAFAFA),               // Custom bot bubble\n)`,
         fields: [
-          { name: 'controller', type: 'TextEditingController?', default: 'null', desc: 'Whiteboard 2: Stores the question or prompt the user typed.' },
-          { name: 'hint', type: 'String', default: "'Ask anything...'", desc: 'Placeholder text shown inside the message field.' },
-          { name: 'label', type: 'String', default: "'YOUR MESSAGE'", desc: 'Label text shown directly above the message box.' },
-          { name: 'showClearButton', type: 'bool', default: 'true', desc: "Shows an 'X' button inside the field to clear text." },
-          { name: 'bubbleRadius', type: 'double', default: '16.0', desc: 'Corner rounding of message and reply cards.' }
+          { name: 'controller', type: 'TextEditingController?', default: 'null', isComplete: false, desc: 'Whiteboard 2: Stores the question or prompt the user typed.' },
+          { name: 'hint', type: 'String', default: "'Ask anything...'", isComplete: false, desc: 'Placeholder text shown inside the message field.' },
+          { name: 'label', type: 'String', default: "'YOUR MESSAGE'", isComplete: true, desc: 'Upper section label shown directly above the message box.' },
+          { name: 'showClearButton', type: 'bool', default: 'true', isComplete: true, desc: "Shows an 'X' button inside the field to clear text." },
+          { name: 'bubbleRadius', type: 'double', default: '16.0', isComplete: true, desc: 'Corner curvature radius of message inputs and reply bubbles.' },
+          { name: 'inputMaxLines', type: 'int', default: '3', isComplete: true, desc: 'Maximum number of lines the input field expands to.' },
+          { name: 'userBubbleColor', type: 'Color?', default: 'null', isComplete: true, desc: 'Direct background color override for the user message bubble.' },
+          { name: 'botBubbleColor', type: 'Color?', default: 'null', isComplete: true, desc: 'Direct background color override for the bot response card.' }
         ]
       },
       {
@@ -655,15 +815,38 @@
         phase: 'phase1',
         x: 1150,
         y: 440,
-        desc: 'The button that triggers the AI response by reading both controllers.',
-        example: `AppActionButton(\n  characterController: characterController,\n  messageController: messageController,\n)`,
+        desc: 'The button that triggers AI generation by reading both controllers.',
+        exampleStandard: `AppActionButton(\n  characterController: characterController,\n  messageController: messageController,\n)`,
+        exampleComplete: `AppActionButton(\n  characterController: characterController,\n  messageController: messageController,\n  label: 'Generate response',           // Custom button text\n  icon: Icons.arrow_upward_rounded,      // Custom icon\n  loadingLabel: 'Thinking...',           // Custom loading text\n  fullWidth: false,                      // Full-width toggle\n  color: const Color(0xFF171717),        // Custom accent color\n)`,
         fields: [
-          { name: 'characterController', type: 'TextEditingController?', default: 'null', desc: 'Reads who to roleplay as when tapped.' },
-          { name: 'messageController', type: 'TextEditingController?', default: 'null', desc: 'Reads what question to ask when tapped.' },
-          { name: 'label', type: 'String', default: "'Send message'", desc: 'Button text in idle state.' },
-          { name: 'loadingLabel', type: 'String', default: "'Thinking...'", desc: 'Button text while waiting for AI response.' },
-          { name: 'icon', type: 'IconData', default: 'Icons.arrow_upward_rounded', desc: 'Icon shown next to the button text.' },
-          { name: 'fullWidth', type: 'bool', default: 'false', desc: 'When true, expands button to 100% container width.' }
+          { name: 'characterController', type: 'TextEditingController?', default: 'null', isComplete: false, desc: 'Reads who to roleplay as when tapped.' },
+          { name: 'messageController', type: 'TextEditingController?', default: 'null', isComplete: false, desc: 'Reads what question to ask when tapped.' },
+          { name: 'label', type: 'String', default: "'Send message'", isComplete: true, desc: 'Custom button text in idle state.' },
+          { name: 'loadingLabel', type: 'String', default: "'Thinking...'", isComplete: true, desc: 'Custom button text while waiting for AI response.' },
+          { name: 'icon', type: 'IconData', default: 'Icons.arrow_upward_rounded', isComplete: true, desc: 'Custom icon shown next to button text.' },
+          { name: 'fullWidth', type: 'bool', default: 'false', isComplete: true, desc: 'When true, expands button to 100% container width.' },
+          { name: 'color', type: 'Color?', default: 'null', isComplete: true, desc: 'Direct background color override for the button.' }
+        ]
+      },
+
+      // COMPLETE UPGRADE: WORKSHOP CHARACTER DATA MODEL
+      {
+        id: 'WorkshopCharacter',
+        name: 'WorkshopCharacter',
+        badge: 'Complete Upgrade',
+        phase: 'complete',
+        isCompleteNode: true,
+        x: 70,
+        y: 930,
+        desc: 'Data model for preset persona chips (Upgrade 2). Shapes personality prompts and avatars.',
+        exampleStandard: `// Only used in Complete implementation (Upgrade 2)`,
+        exampleComplete: `const WorkshopCharacter(\n  'Socrates',\n  subtitle: 'Classical Philosopher',\n  personality: 'Deep, questioning, intellectual, and uses the Socratic method.',\n  avatarIcon: Icons.auto_stories_rounded,\n)`,
+        fields: [
+          { name: 'name', type: 'String', default: '(required)', isComplete: true, desc: "Character display name (e.g. 'Socrates', 'Tony Stark', 'Yoda')." },
+          { name: 'subtitle', type: 'String', default: "''", isComplete: true, desc: "Short tagline or role (e.g. 'Classical Philosopher')." },
+          { name: 'personality', type: 'String', default: "''", isComplete: true, desc: 'System prompt instructions injected into Gemini shaping speech & tone.' },
+          { name: 'avatarIcon', type: 'IconData?', default: 'null', isComplete: true, desc: 'Material icon shown on preset chip and as fallback avatar.' },
+          { name: 'imageUrl', type: 'String', default: "''", isComplete: true, desc: 'Web image URL for persona avatar in response card.' }
         ]
       },
 
@@ -676,46 +859,16 @@
         x: 1590,
         y: 130,
         desc: 'Configures colors and brightness across all widgets in the app.',
-        example: `// 🎨 PRESET THEME 1: Monochrome (Clean Black & White)
-const palette = WorkshopPalette(
-  primary: Color(0xFF171717),
-  secondary: Color(0xFF525252),
-  background: Color(0xFFFFFFFF),
-  surface: Color(0xFFF5F5F5),
-  text: Color(0xFF171717),
-  accent: Color(0xFFA3A3A3),
-  brightness: Brightness.light,
-);
-
-// 🎨 PRESET THEME 2: Midnight (Modern Dark & Lime)
-// const palette = WorkshopPalette(
-//   primary: Color(0xFF111111),
-//   secondary: Color(0xFF333333),
-//   background: Color(0xFF090909),
-//   surface: Color(0xFF1E1E1E),
-//   text: Color(0xFFF5F5F5),
-//   accent: Color(0xFFA3E635),
-//   brightness: Brightness.dark,
-// );
-
-// 🎨 PRESET THEME 3: Ocean Mist (Navy & Warm Peach)
-// const palette = WorkshopPalette(
-//   primary: Color(0xFF001B2E),
-//   secondary: Color(0xFF294C60),
-//   background: Color(0xFFFFEFD3),
-//   surface: Color(0xFFFFFFFF),
-//   text: Color(0xFF001B2E),
-//   accent: Color(0xFFFF9F68),
-//   brightness: Brightness.light,
-// );`,
+        exampleStandard: `const palette = WorkshopPalette(\n  primary: Color(0xFF171717),\n  secondary: Color(0xFF525252),\n  background: Color(0xFFFFFFFF),\n  surface: Color(0xFFF5F5F5),\n  text: Color(0xFF171717),\n  accent: Color(0xFFA3A3A3),\n  brightness: Brightness.light,\n);`,
+        exampleComplete: `const palette = WorkshopPalette(\n  primary: Color(0xFF171717),\n  secondary: Color(0xFF525252),\n  background: Color(0xFFFFFFFF),\n  surface: Color(0xFFF5F5F5),\n  text: Color(0xFF171717),\n  accent: Color(0xFFA3A3A3),\n  brightness: Brightness.light,\n);`,
         fields: [
-          { name: 'primary', type: 'Color', default: '0xFF8ABFFF', desc: 'Main accent color used for buttons, send icons, and highlights.' },
-          { name: 'secondary', type: 'Color', default: '0xFF22364B', desc: 'Secondary brand color used for title accents and chips.' },
-          { name: 'background', type: 'Color', default: '0xFF101215', desc: 'The background color of the scaffold and entire page.' },
-          { name: 'surface', type: 'Color', default: '0xFF282C34', desc: 'Background color for inputs, message bubbles, and card containers.' },
-          { name: 'text', type: 'Color', default: '0xFFF5F7FA', desc: 'Primary typography color throughout the app.' },
-          { name: 'accent', type: 'Color', default: '0xFF8ABFFF', desc: 'Highlights, loading spinner, and chip border colors.' },
-          { name: 'brightness', type: 'Brightness', default: 'Brightness.dark', desc: 'Brightness mode: Brightness.dark or Brightness.light.' }
+          { name: 'primary', type: 'Color', default: '0xFF8ABFFF', isComplete: false, desc: 'Main accent color used for buttons, send icons, and highlights.' },
+          { name: 'secondary', type: 'Color', default: '0xFF22364B', isComplete: false, desc: 'Secondary brand color used for title accents and chips.' },
+          { name: 'background', type: 'Color', default: '0xFF101215', isComplete: false, desc: 'The background color of the scaffold and entire page.' },
+          { name: 'surface', type: 'Color', default: '0xFF282C34', isComplete: false, desc: 'Background color for inputs, message bubbles, and card containers.' },
+          { name: 'text', type: 'Color', default: '0xFFF5F7FA', isComplete: false, desc: 'Primary typography color throughout the app.' },
+          { name: 'accent', type: 'Color', default: '0xFF8ABFFF', isComplete: false, desc: 'Highlights, loading spinner, and chip border colors.' },
+          { name: 'brightness', type: 'Brightness', default: 'Brightness.dark', isComplete: false, desc: 'Brightness mode: Brightness.dark or Brightness.light.' }
         ]
       },
 
@@ -729,11 +882,12 @@ const palette = WorkshopPalette(
         x: 430,
         y: 930,
         desc: 'Whiteboard 1: Holds WHO you are talking to. AppCharacterSelector writes into it, AppActionButton reads it.',
-        example: `// 1. Declare in State:\nfinal characterController = TextEditingController(text: 'Socrates');\n\n// 2. Dispose to prevent memory leaks:\n@override\nvoid dispose() {\n  characterController.dispose();\n  super.dispose();\n}`,
+        exampleStandard: `// 1. Declare in State:\nfinal characterController = TextEditingController(text: 'Socrates');\n\n// 2. Dispose to prevent memory leaks:\n@override\nvoid dispose() {\n  characterController.dispose();\n  super.dispose();\n}`,
+        exampleComplete: `// Same in complete implementation\nfinal characterController = TextEditingController(text: 'Socrates');\n\n@override\nvoid dispose() {\n  characterController.dispose();\n  super.dispose();\n}`,
         fields: [
-          { name: 'text', type: 'String', default: "'Socrates'", desc: 'The current character name stored in memory.' },
-          { name: 'clear()', type: 'Function', default: 'void', desc: 'Clears the text in the character input box.' },
-          { name: 'dispose()', type: 'Function', default: 'void', desc: 'Frees memory when the screen is destroyed.' }
+          { name: 'text', type: 'String', default: "'Socrates'", isComplete: false, desc: 'The current character name stored in memory.' },
+          { name: 'clear()', type: 'Function', default: 'void', isComplete: false, desc: 'Clears the text in the character input box.' },
+          { name: 'dispose()', type: 'Function', default: 'void', isComplete: false, desc: 'Frees memory when the screen is destroyed.' }
         ]
       },
       {
@@ -745,11 +899,12 @@ const palette = WorkshopPalette(
         x: 790,
         y: 930,
         desc: 'Whiteboard 2: Holds WHAT you are asking. AppConversation writes into it, AppActionButton reads it.',
-        example: `// 1. Declare in State:\nfinal messageController = TextEditingController();\n\n// 2. Dispose to prevent memory leaks:\n@override\nvoid dispose() {\n  messageController.dispose();\n  super.dispose();\n}`,
+        exampleStandard: `// 1. Declare in State:\nfinal messageController = TextEditingController();\n\n// 2. Dispose to prevent memory leaks:\n@override\nvoid dispose() {\n  messageController.dispose();\n  super.dispose();\n}`,
+        exampleComplete: `// Same in complete implementation\nfinal messageController = TextEditingController();\n\n@override\nvoid dispose() {\n  messageController.dispose();\n  super.dispose();\n}`,
         fields: [
-          { name: 'text', type: 'String', default: "''", desc: 'The current user message text stored in memory.' },
-          { name: 'clear()', type: 'Function', default: 'void', desc: 'Clears the question box after sending.' },
-          { name: 'dispose()', type: 'Function', default: 'void', desc: 'Frees memory when the screen is destroyed.' }
+          { name: 'text', type: 'String', default: "''", isComplete: false, desc: 'The current user message text stored in memory.' },
+          { name: 'clear()', type: 'Function', default: 'void', isComplete: false, desc: 'Clears the question box after sending.' },
+          { name: 'dispose()', type: 'Function', default: 'void', isComplete: false, desc: 'Frees memory when the screen is destroyed.' }
         ]
       },
 
@@ -762,11 +917,12 @@ const palette = WorkshopPalette(
         x: 1620,
         y: 590,
         desc: 'Holds the AI settings: model name, API key, and the offline mock switch.',
-        example: `const config = AiConfig(\n  apiKey: 'PASTE_KEY_HERE',\n  model: 'gemini-3.5-flash-lite',\n  useMock: false,\n);`,
+        exampleStandard: `const config = AiConfig(\n  apiKey: 'PASTE_KEY_HERE',\n  model: 'gemini-3.5-flash-lite',\n  useMock: true,\n);`,
+        exampleComplete: `const config = AiConfig(\n  apiKey: 'YOUR_GEMINI_KEY',\n  model: 'gemini-3.5-flash-lite',\n  useMock: false,\n);`,
         fields: [
-          { name: 'apiKey', type: 'String', default: "''", desc: 'Your Google AI Studio API key (needed when useMock is false).' },
-          { name: 'model', type: 'String', default: "'gemini-3.5-flash-lite'", desc: 'The exact Gemini model name to use.' },
-          { name: 'useMock', type: 'bool', default: 'true', desc: 'Offline mock mode. Set true for instant test replies; false for real Gemini.' }
+          { name: 'apiKey', type: 'String', default: "''", isComplete: false, desc: 'Your Google AI Studio API key (needed when useMock is false).' },
+          { name: 'model', type: 'String', default: "'gemini-3.5-flash-lite'", isComplete: false, desc: 'The exact Gemini model name to use.' },
+          { name: 'useMock', type: 'bool', default: 'true', isComplete: false, desc: 'Offline mock switch. Set true for instant local replies; false for real Gemini.' }
         ]
       }
     ];
@@ -786,7 +942,9 @@ const palette = WorkshopPalette(
       { from: 'AppCharacterSelector', to: 'characterController', isController: true, label: 'writes who' },
       { from: 'characterController', to: 'AppActionButton', isController: true, label: 'reads who' },
       { from: 'AppConversation', to: 'messageController', isController: true, label: 'writes what' },
-      { from: 'messageController', to: 'AppActionButton', isController: true, label: 'reads what' }
+      { from: 'messageController', to: 'AppActionButton', isController: true, label: 'reads what' },
+      // Complete Upgrade Linker (Preset Chips)
+      { from: 'AppCharacterSelector', to: 'WorkshopCharacter', isCompleteConnection: true, label: 'preset chips' }
     ];
 
     // Pan & Zoom Engine
@@ -810,15 +968,52 @@ const palette = WorkshopPalette(
       zoomText.textContent = `${Math.round(zoom * 100)}%`;
     }
 
+    // Toggle Complete Mode
+    function toggleCompleteMode() {
+      isCompleteMode = !isCompleteMode;
+      const btn = document.getElementById('toggle-complete-btn');
+      const pill = document.getElementById('toggle-pill');
+
+      if (isCompleteMode) {
+        btn.classList.add('active');
+        pill.textContent = 'ON';
+      } else {
+        btn.classList.remove('active');
+        pill.textContent = 'OFF';
+      }
+
+      renderNodes();
+      setTimeout(renderConnections, 30);
+
+      // If sidebar is currently open, refresh its content
+      if (selectedNodeId) {
+        openSidebar(selectedNodeId);
+      }
+    }
+
     // Render All Cards
     function renderNodes() {
       nodesContainer.innerHTML = '';
+      
       NODES.forEach(node => {
+        // If it's a complete-only node (like WorkshopCharacter), only show when Complete Mode is ON
+        if (node.isCompleteNode && !isCompleteMode) return;
+
         const el = document.createElement('div');
-        el.className = `node ${node.isController ? 'controller-node' : ''}`;
+        const nodeClasses = [
+          'node',
+          node.isController ? 'controller-node' : '',
+          node.isCompleteNode ? 'complete-node' : ''
+        ].filter(Boolean).join(' ');
+
+        el.className = nodeClasses;
         el.id = `node-${node.id}`;
         el.style.left = `${node.x}px`;
         el.style.top = `${node.y}px`;
+
+        // Filter or style fields based on isCompleteMode
+        const visibleFields = node.fields.filter(f => isCompleteMode || !f.isComplete);
+        const hiddenCompleteCount = node.fields.filter(f => f.isComplete).length;
 
         el.innerHTML = `
           <div class="node-header" onclick="openSidebar('${node.id}')">
@@ -827,8 +1022,8 @@ const palette = WorkshopPalette(
           </div>
           <div class="node-desc">${node.desc}</div>
           <div class="node-fields">
-            ${node.fields.map(f => `
-              <div class="field-item" data-field='${JSON.stringify(f).replace(/'/g, "&apos;")}' data-nodename='${node.name}'>
+            ${visibleFields.map(f => `
+              <div class="field-item ${f.isComplete ? 'is-upgrade' : ''}" data-field='${JSON.stringify(f).replace(/'/g, "&apos;")}' data-nodename='${node.name}'>
                 <div class="field-left">
                   <span class="field-bullet">•</span>
                   <span class="field-name">${f.name}</span>
@@ -864,6 +1059,9 @@ const palette = WorkshopPalette(
     function renderConnections() {
       svgConnections.innerHTML = '';
       CONNECTIONS.forEach(conn => {
+        // Skip complete-only connections if Complete Mode is OFF
+        if (conn.isCompleteConnection && !isCompleteMode) return;
+
         const fromNode = NODES.find(n => n.id === conn.from);
         const toNode = NODES.find(n => n.id === conn.to);
         if (!fromNode || !toNode) return;
@@ -887,7 +1085,14 @@ const palette = WorkshopPalette(
         const pathData = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', pathData);
-        path.setAttribute('class', `connection-line ${conn.isController ? 'controller-line' : ''}`);
+
+        const lineClasses = [
+          'connection-line',
+          conn.isController ? 'controller-line' : '',
+          conn.isCompleteConnection ? 'complete-line' : ''
+        ].filter(Boolean).join(' ');
+
+        path.setAttribute('class', lineClasses);
         svgConnections.appendChild(path);
       });
     }
@@ -918,13 +1123,17 @@ const palette = WorkshopPalette(
     }
 
     // Clean Example Constructor Sidebar Logic
-    function openSidebar(nodeId) {
+    function openSidebar(nodeId, forceTab) {
       const node = NODES.find(n => n.id === nodeId);
       if (!node) return;
 
+      selectedNodeId = nodeId;
+      const targetMode = forceTab || (isCompleteMode ? 'complete' : 'standard');
+
       document.getElementById('sb-title').textContent = node.name;
       document.getElementById('sb-desc').textContent = node.desc;
-      document.getElementById('sb-code').textContent = node.example;
+      
+      updateSidebarSnippet(node, targetMode);
 
       sidebar.classList.add('open');
 
@@ -933,8 +1142,35 @@ const palette = WorkshopPalette(
       if (activeEl) activeEl.classList.add('active-node');
     }
 
+    function updateSidebarSnippet(node, mode) {
+      const isComp = mode === 'complete';
+      const code = isComp ? node.exampleComplete : node.exampleStandard;
+      
+      document.getElementById('sb-code').textContent = code || node.exampleStandard;
+      document.getElementById('sb-subtitle').textContent = isComp ? 'Complete Implementation' : 'Standard Implementation';
+
+      const tabStd = document.getElementById('sb-tab-std');
+      const tabComp = document.getElementById('sb-tab-comp');
+
+      if (isComp) {
+        tabStd.classList.remove('active');
+        tabComp.classList.add('active');
+      } else {
+        tabStd.classList.add('active');
+        tabComp.classList.remove('active');
+      }
+    }
+
+    function switchSidebarTab(mode) {
+      if (!selectedNodeId) return;
+      const node = NODES.find(n => n.id === selectedNodeId);
+      if (!node) return;
+      updateSidebarSnippet(node, mode);
+    }
+
     document.getElementById('sb-close').addEventListener('click', () => {
       sidebar.classList.remove('open');
+      selectedNodeId = null;
       document.querySelectorAll('.node').forEach(n => n.classList.remove('active-node'));
     });
 
@@ -997,21 +1233,93 @@ const palette = WorkshopPalette(
       viewport.classList.remove('dragging');
     });
 
-    // Zoom Handlers
+    // Trackpad & Mouse Wheel Handling: Two-finger move (pan) and pinch-to-zoom
     viewport.addEventListener('wheel', (e) => {
+      // If cursor is inside the open sidebar code block, let the sidebar scroll normally
+      if (e.target.closest('#sidebar')) return;
+
       e.preventDefault();
-      const zoomFactor = 1.08;
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
 
-      let newZoom = e.deltaY < 0 ? zoom * zoomFactor : zoom / zoomFactor;
-      newZoom = Math.min(Math.max(newZoom, 0.3), 2.0);
+      if (e.ctrlKey || e.metaKey) {
+        // Pinch-to-zoom on laptop trackpad (or Ctrl + mouse wheel)
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
 
-      panX = mouseX - (mouseX - panX) * (newZoom / zoom);
-      panY = mouseY - (mouseY - panY) * (newZoom / zoom);
-      zoom = newZoom;
+        // Smooth zoom factor based on deltaY
+        const zoomDelta = -e.deltaY * 0.01;
+        const factor = Math.exp(zoomDelta);
+        let newZoom = Math.min(Math.max(zoom * factor, 0.25), 2.5);
+
+        panX = mouseX - (mouseX - panX) * (newZoom / zoom);
+        panY = mouseY - (mouseY - panY) * (newZoom / zoom);
+        zoom = newZoom;
+      } else {
+        // Two-finger move / pan on laptop trackpad (and standard scroll)
+        if (e.shiftKey && e.deltaX === 0) {
+          panX -= e.deltaY;
+        } else {
+          panX -= e.deltaX;
+          panY -= e.deltaY;
+        }
+      }
+
       updateTransform();
     }, { passive: false });
+
+    // Two-finger touch gesture support (for laptop touchscreens and touch devices)
+    let touchStartDist = 0;
+    let touchStartZoom = zoom;
+    let touchStartMidX = 0;
+    let touchStartMidY = 0;
+    let isTouchPinch = false;
+
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.target.closest('#sidebar')) return;
+      if (e.touches.length === 2) {
+        isTouchPinch = true;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchStartDist = Math.hypot(dx, dy);
+        touchStartZoom = zoom;
+        touchStartMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        touchStartMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        startX = touchStartMidX - panX;
+        startY = touchStartMidY - panY;
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchmove', (e) => {
+      if (!isTouchPinch || e.touches.length !== 2) return;
+      e.preventDefault();
+
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+      // Two-finger move (pan)
+      panX = midX - startX;
+      panY = midY - startY;
+
+      // Two-finger pinch zoom
+      if (touchStartDist > 0) {
+        const scale = dist / touchStartDist;
+        const newZoom = Math.min(Math.max(touchStartZoom * scale, 0.25), 2.5);
+        panX = midX - (midX - panX) * (newZoom / zoom);
+        panY = midY - (midY - panY) * (newZoom / zoom);
+        zoom = newZoom;
+      }
+
+      updateTransform();
+    }, { passive: false });
+
+    viewport.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        isTouchPinch = false;
+        touchStartDist = 0;
+      }
+    });
 
     document.getElementById('btn-zoom-in').addEventListener('click', () => {
       zoom = Math.min(zoom * 1.15, 2.0);
